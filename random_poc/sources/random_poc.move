@@ -1,12 +1,8 @@
 module random_poc::random_poc;
 
-use sui::object::UID;
-use sui::tx_context;
-use sui::transfer;
 use sui::event;
-use sui::random::{Self, Random};
+use sui::random::{Random};
 use sui::random::new_generator;
-use std::vector::borrow_mut;
 
 const ENotActiveLottery: u64 = 1;
 const EInvalidSlot: u64 = 2;

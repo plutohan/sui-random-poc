@@ -2,7 +2,7 @@
 module random_poc::tests {
     use random_poc::random_poc;
     use sui::random::{Self, Random};
-    use sui::test_scenario::{Self as ts, Scenario};
+    use sui::test_scenario::{Self as ts};
 
     const ADMIN: address = @0xAD;
 
