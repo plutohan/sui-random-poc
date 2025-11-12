@@ -4,14 +4,17 @@
 // Your deployed random_poc package ID
 // Find this in your deployment output or Move.toml after publishing
 export const PACKAGE_ID =
-	"0xd2dff07ff1340464c40083d9503e0274169f26c0c02e75186d7ace95c983da21"
+	"0x731b3568878c9caff5054ec19802bf2f0ef8ee08d3147796c886ccbf0fb12a48"
 
 // Sui Random object ID (standard on all networks)
 export const RANDOM_OBJECT_ID = "0x8"
 
-// Example lottery object IDs for quick testing
-// After creating a lottery, add its object ID here for easy reference
-export const EXAMPLE_LOTTERY_IDS = {
-	// example1: "0x...",
-	// example2: "0x...",
+// Contract constants
+export const SLOT_COUNT = 9
+export const LOTTERY_PRIZE = 100_000_000 // 0.1 SUI in MIST
+export const FEE = 15_000_000 // 0.015 SUI in MIST
+
+// Helper function to convert MIST to SUI
+export const mistToSui = (mist: number): string => {
+	return parseFloat((mist / 1_000_000_000).toFixed(9)).toString()
 }
