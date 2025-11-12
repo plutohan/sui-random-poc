@@ -6,6 +6,8 @@ use sui::random::new_generator;
 
 const ENotActiveLottery: u64 = 1;
 const EInvalidSlot: u64 = 2;
+const SLOT_COUNT: u64 = 9;
+
 public struct Lottery has key {
   id: UID,
   slots: vector<bool>,
@@ -15,7 +17,7 @@ public struct Lottery has key {
 
 public struct LotteryCreatedEvent has copy, drop, store {
   lottery_id: ID,
-  max_slots: u64,
+  slot_count: u64,
 }
 
 public struct PickedEvent has copy, drop, store {
@@ -25,17 +27,17 @@ public struct PickedEvent has copy, drop, store {
   random_number: u64,
 }
 
-public fun create_lottery(max_slot: u64, ctx: &mut tx_context::TxContext) {
+public fun create_lottery(ctx: &mut tx_context::TxContext) {
   let lottery = Lottery {
     id: sui::object::new(ctx),
-    slots: make_empty_vec(max_slot),
+    slots: make_empty_vec(SLOT_COUNT),
     is_active: true,
     winning_slot: 0
   };
 
   event::emit(LotteryCreatedEvent {
     lottery_id: object::id(&lottery),
-    max_slots: max_slot,
+    slot_count: SLOT_COUNT,
   });
 
   transfer::share_object(lottery);
@@ -121,4 +123,8 @@ public fun get_slots_length(lottery: &Lottery): u64 {
 
 public fun get_winning_slot(lottery: &Lottery): u64 {
   lottery.winning_slot
+}
+
+public fun slot_count(): u64 {
+  SLOT_COUNT
 }

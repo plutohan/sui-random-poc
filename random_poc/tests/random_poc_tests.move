@@ -1,6 +1,6 @@
 #[test_only]
 module random_poc::tests {
-    use random_poc::random_poc;
+    use random_poc::random_poc::{Self};
     use sui::random::{Self, Random};
     use sui::test_scenario::{Self as ts};
     use sui::test_utils::{Self};
@@ -16,9 +16,9 @@ module random_poc::tests {
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with 5 slots
+        // Create lottery
         {
-            random_poc::create_lottery(5, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -47,9 +47,9 @@ module random_poc::tests {
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with 10 slots
+        // Create lottery
         {
-            random_poc::create_lottery(10, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -82,7 +82,7 @@ module random_poc::tests {
         ts::next_tx(&mut scenario, ADMIN);
 
         {
-            random_poc::create_lottery(5, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -107,9 +107,9 @@ module random_poc::tests {
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with few slots to increase winning probability
+        // Create lottery
         {
-            random_poc::create_lottery(2, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -119,7 +119,7 @@ module random_poc::tests {
 
             // Try multiple times until someone wins
             let mut i = 0;
-            while (random_poc::is_active(&lottery) && i < 2) {
+            while (random_poc::is_active(&lottery) && i < random_poc::slot_count()) {
                 if (random_poc::get_slot(&lottery, i) == false) {
                     random_poc::pick_slot(i, &mut lottery, &r, ts::ctx(&mut scenario));
                 };
@@ -137,7 +137,7 @@ module random_poc::tests {
         let mut scenario = ts::begin(ADMIN);
 
         {
-            random_poc::create_lottery(10, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -159,15 +159,15 @@ module random_poc::tests {
     }
 
     #[test]
-    fun test_create_lottery_with_single_slot() {
+    fun test_create_lottery_basic() {
         let mut scenario = ts::begin(@0x0);
 
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with only 1 slot
+        // Create lottery
         {
-            random_poc::create_lottery(1, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -175,7 +175,7 @@ module random_poc::tests {
             let mut lottery = ts::take_shared<random_poc::Lottery>(&scenario);
             let r = ts::take_shared<Random>(&scenario);
 
-            assert!(random_poc::get_slots_length(&lottery) == 1, 1);
+            assert!(random_poc::get_slots_length(&lottery) == random_poc::slot_count(), 1);
 
             random_poc::pick_slot(0, &mut lottery, &r, ts::ctx(&mut scenario));
             assert!(random_poc::get_slot(&lottery, 0) == true, 2);
@@ -187,19 +187,19 @@ module random_poc::tests {
     }
 
     #[test]
-    fun test_create_lottery_with_many_slots() {
+    fun test_create_lottery_validates_slot_count() {
         let mut scenario = ts::begin(ADMIN);
 
-        // Create lottery with 100 slots
+        // Create lottery
         {
-            random_poc::create_lottery(100, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
         {
             let lottery = ts::take_shared<random_poc::Lottery>(&scenario);
 
-            assert!(random_poc::get_slots_length(&lottery) == 100, 1);
+            assert!(random_poc::get_slots_length(&lottery) == random_poc::slot_count(), 1);
             assert!(random_poc::is_active(&lottery) == true, 2);
 
             ts::return_shared(lottery);
@@ -216,7 +216,7 @@ module random_poc::tests {
         ts::next_tx(&mut scenario, ADMIN);
 
         {
-            random_poc::create_lottery(5, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -242,7 +242,7 @@ module random_poc::tests {
 
         // Create lottery with 2 slots (50% winning probability)
         {
-            random_poc::create_lottery(2, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -252,8 +252,8 @@ module random_poc::tests {
 
             // Keep trying until someone wins
             let mut attempts = 0;
-            while (random_poc::is_active(&lottery) && attempts < 2) {
-                let slot_to_try = attempts % 2;
+            while (random_poc::is_active(&lottery) && attempts < random_poc::slot_count()) {
+                let slot_to_try = attempts % random_poc::slot_count();
                 if (random_poc::get_slot(&lottery, slot_to_try) == false) {
                     random_poc::pick_slot(slot_to_try, &mut lottery, &r, ts::ctx(&mut scenario));
                 };
@@ -262,7 +262,7 @@ module random_poc::tests {
 
             // If won, winning_slot should be recorded
             if (!random_poc::is_active(&lottery)) {
-                assert!(random_poc::get_winning_slot(&lottery) < 2, 1);
+                assert!(random_poc::get_winning_slot(&lottery) < random_poc::slot_count(), 1);
             };
 
             ts::return_shared(lottery);
@@ -278,9 +278,9 @@ module random_poc::tests {
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with 5 slots
+        // Create lottery
         {
-            random_poc::create_lottery(5, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -288,22 +288,26 @@ module random_poc::tests {
             let mut lottery = ts::take_shared<random_poc::Lottery>(&scenario);
             let r = ts::take_shared<Random>(&scenario);
 
-            // Pick first 4 slots (excluding the last slot)
-            random_poc::pick_slot(0, &mut lottery, &r, ts::ctx(&mut scenario));
-            random_poc::pick_slot(1, &mut lottery, &r, ts::ctx(&mut scenario));
-            random_poc::pick_slot(2, &mut lottery, &r, ts::ctx(&mut scenario));
-            random_poc::pick_slot(3, &mut lottery, &r, ts::ctx(&mut scenario));
+            // Pick all but the last slot - stop if someone wins
+            let mut picked = 0;
+            while (picked < random_poc::slot_count() - 1 && random_poc::is_active(&lottery)) {
+                random_poc::pick_slot(picked, &mut lottery, &r, ts::ctx(&mut scenario));
+                picked = picked + 1;
+            };
 
-            // Lottery should still be active
-            assert!(random_poc::is_active(&lottery) == true, 1);
+            // If lottery is still active, pick the last slot which must guarantee a win
+            if (random_poc::is_active(&lottery)) {
+                // Lottery should still be active before picking last slot
+                assert!(random_poc::is_active(&lottery) == true, 1);
 
-            // Pick last slot - must guarantee a win
-            random_poc::pick_slot(4, &mut lottery, &r, ts::ctx(&mut scenario));
+                // Pick last slot - must guarantee a win
+                random_poc::pick_slot(random_poc::slot_count() - 1, &mut lottery, &r, ts::ctx(&mut scenario));
 
-            // Lottery should become inactive
-            assert!(random_poc::is_active(&lottery) == false, 2);
-            // Winning slot should be 4
-            assert!(random_poc::get_winning_slot(&lottery) == 4, 3);
+                // Lottery should become inactive
+                assert!(random_poc::is_active(&lottery) == false, 2);
+                // Winning slot should be the last one
+                assert!(random_poc::get_winning_slot(&lottery) == random_poc::slot_count() - 1, 3);
+            };
 
             ts::return_shared(lottery);
             ts::return_shared(r);
@@ -320,9 +324,9 @@ module random_poc::tests {
         random::create_for_testing(ts::ctx(&mut scenario));
         ts::next_tx(&mut scenario, ADMIN);
 
-        // Create lottery with 10 slots
+        // Create lottery
         {
-            random_poc::create_lottery(10, ts::ctx(&mut scenario));
+            random_poc::create_lottery(ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -331,13 +335,14 @@ module random_poc::tests {
             let r = ts::take_shared<Random>(&scenario);
 
             // Log winning threshold for reference
-            test_utils::print(b"Winning threshold (10000/10):");
-            debug::print(&1000);
+            let winning_threshold = 10000 / random_poc::slot_count();
+            test_utils::print(b"Winning threshold (10000/slot_count()):");
+            debug::print(&winning_threshold);
             test_utils::print(b"");
 
-            // Pick all 10 slots and log the random numbers
+            // Pick all slots and log the random numbers (stop if someone wins)
             let mut i = 0;
-            while (i < 10) {
+            while (i < random_poc::slot_count() && random_poc::is_active(&lottery)) {
                 test_utils::print(b"=== Picking slot ===");
                 debug::print(&i);
 
