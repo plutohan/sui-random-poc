@@ -6,7 +6,7 @@ const { networkConfig } = createNetworkConfig({
     url: getFullnodeUrl("devnet"),
   },
   testnet: {
-    url: getFullnodeUrl("testnet"),
+    url: import.meta.env.DEV ? '/api/sui' : getFullnodeUrl("testnet"),
   },
   mainnet: {
     url: getFullnodeUrl("mainnet"),
