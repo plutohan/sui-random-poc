@@ -12,6 +12,17 @@ module random_poc::tests {
     const LOTTERY_COST: u64 = 100_000_000; // 0.1 SUI
     const FEE: u64 = 15_000_000; // 0.015 SUI
 
+    // Helper function to generate a test commitment
+    // In a real scenario, this would be: commitment = secret^2 + nullifier^2
+    fun generate_test_commitment(secret: u64, nullifier: u64): u64 {
+        secret * secret + nullifier * nullifier
+    }
+
+    // Helper function to generate a test nullifier hash
+    fun generate_test_nullifier_hash(nullifier: u64): u64 {
+        nullifier * nullifier
+    }
+
     #[test]
     fun test_create_lottery_and_pick() {
         // Create test scenario
@@ -33,9 +44,10 @@ module random_poc::tests {
             let mut lottery = ts::take_shared<random_poc::Lottery>(&scenario);
             let r = ts::take_shared<Random>(&scenario);
 
-            // Pick the first slot
+            // Pick the first slot with a commitment
+            let commitment = generate_test_commitment(12345, 67890); // secret=12345, nullifier=67890
             let fee_payment = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee_payment, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee_payment, commitment, ts::ctx(&mut scenario));
 
             // Verify slot 0 is now marked as true
             assert!(random_poc::get_slot(&lottery, 0) == true, 1);

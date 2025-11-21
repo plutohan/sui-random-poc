@@ -1,0 +1,23 @@
+{
+  "name": "zk-lottery-circuits",
+  "version": "1.0.0",
+  "description": "Zero-Knowledge circuits for privacy-preserving lottery",
+  "scripts": {
+    "setup": "./setup.sh",
+    "test": "./test_proof.sh",
+    "clean": "rm -rf claim_js claim_cpp claim.r1cs claim.sym *.ptau *.zkey *.wtns *.json verifier.sol"
+  },
+  "devDependencies": {
+    "circom": "^2.1.9",
+    "snarkjs": "^0.7.4"
+  },
+  "keywords": [
+    "zero-knowledge",
+    "zk-snark",
+    "groth16",
+    "privacy",
+    "lottery"
+  ],
+  "author": "",
+  "license": "MIT"
+}

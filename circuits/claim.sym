@@ -1,0 +1,6 @@
+1,1,0,main.commitment
+2,2,0,main.nullifierHash
+3,3,0,main.secret
+4,4,0,main.nullifier
+5,5,0,main.secretSquared
+6,-1,0,main.nullifierSquared
