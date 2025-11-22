@@ -29,6 +29,7 @@ export const LotteryCreation: FC<LotteryCreationProps> = ({
 		mistToSui(DEFAULT_LOTTERY_PRIZE)
 	)
 	const [feeInSui, setFeeInSui] = useState<string>(mistToSui(DEFAULT_FEE))
+	const [localStatus, setLocalStatus] = useState<string>("")
 
 	const handleCreateLottery = async () => {
 		if (isLoading) return
@@ -49,6 +50,7 @@ export const LotteryCreation: FC<LotteryCreationProps> = ({
 
 		onLoadingChange(true)
 		onStatusChange("Creating lottery...")
+		setLocalStatus("Creating lottery...")
 
 		try {
 			const tx = new Transaction()
@@ -67,29 +69,33 @@ export const LotteryCreation: FC<LotteryCreationProps> = ({
 				{
 					onSuccess: (result) => {
 						console.log("Transaction successful:", result)
-						onStatusChange(
-							`Lottery created successfully! Digest: ${result.digest}`
-						)
+						const message = `Lottery created successfully! Digest: ${result.digest}`
+						onStatusChange(message)
+						setLocalStatus(message)
 						onLoadingChange(false)
 						// Refresh lottery list after creating
 						setTimeout(() => onLotteryCreated(), 2000)
 					},
 					onError: (error) => {
 						console.error("Transaction failed:", error)
-						onStatusChange(`Error: ${error.message}`)
+						const message = `Error: ${error.message}`
+						onStatusChange(message)
+						setLocalStatus(message)
 						onLoadingChange(false)
 					},
 				}
 			)
 		} catch (error: any) {
 			console.error("Error creating lottery:", error)
-			onStatusChange(`Error: ${error.message}`)
+			const message = `Error: ${error.message}`
+			onStatusChange(message)
+			setLocalStatus(message)
 			onLoadingChange(false)
 		}
 	}
 
 	return (
-		<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+		<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
 			<h3 className="text-xl font-semibold mb-4">Create New Lottery</h3>
 			<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
 				Create a 3x3 lottery with 9 slots. Configure the prize pool and entry
@@ -141,6 +147,9 @@ export const LotteryCreation: FC<LotteryCreationProps> = ({
 			>
 				{isLoading ? "Processing..." : `Create Lottery (Pay ${prizeInSui} SUI)`}
 			</button>
+			{localStatus && (
+				<p className="mt-3 text-xs text-gray-600 dark:text-gray-400">{localStatus}</p>
+			)}
 		</div>
 	)
 }

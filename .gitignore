@@ -3,3 +3,5 @@
 .coverage*
 .claude
 node_modules
+
+.env

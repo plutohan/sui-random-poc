@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react"
+import { FC, useEffect } from "react"
 import { useSecret } from "../../../hooks/useSecret"
 
 interface SecretManagementProps {
@@ -12,16 +12,11 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 }) => {
 	const {
 		claimSecretHash,
-		walrusBlobId,
 		generatedSecret,
 		isGeneratingSecret,
-		isRetrievingSecret,
 		status,
 		handleGenerateAndUploadSecret,
-		handleRetrieveSecretFromWalrus,
 	} = useSecret(currentAccountAddress)
-
-	const [blobIdInput, setBlobIdInput] = useState<string>("")
 
 	// Notify parent of status changes using useEffect
 	useEffect(() => {
@@ -29,10 +24,6 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 			onStatusChange(status)
 		}
 	}, [status, onStatusChange])
-
-	const handleFetchSecret = () => {
-		handleRetrieveSecretFromWalrus(blobIdInput)
-	}
 
 	return (
 		<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">

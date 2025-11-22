@@ -5,19 +5,25 @@ import { NavigationProvider } from "./providers/navigation/NavigationProvider";
 import { useNavigation } from "./providers/navigation/NavigationContext";
 import WalletView from "./views/WalletView";
 import HomeView from "./views/HomeView";
+import LotteryDetailPage from "./components/lottery/components/LotteryDetailPage";
 
 const Pages: React.FC = () => {
   const { currentPage } = useNavigation();
 
-  switch (currentPage) {
-    case "/":
-    case "":
-      return <HomeView />;
-    case "/wallet":
-      return <WalletView />
-    default:
-      return <div className="text-center">Page not found!</div>;
+  if (currentPage === "/" || currentPage === "") {
+    return <HomeView />;
   }
+
+  if (currentPage === "/wallet") {
+    return <WalletView />;
+  }
+
+  if (currentPage.startsWith("/lottery/")) {
+    const gameId = decodeURIComponent(currentPage.replace("/lottery/", ""));
+    return <LotteryDetailPage gameId={gameId} />;
+  }
+
+  return <div className="text-center">Page not found!</div>;
 };
 
 const App: React.FC = () => {
