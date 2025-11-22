@@ -312,10 +312,9 @@ const LotteryInteraction: FC = () => {
 					<li>Connect your wallet using the navbar</li>
 					<li>
 						<strong>One-time setup:</strong> In the "My Secret" section,
-						click "Generate Secret & Upload to Walrus" to create your
-						personal claim secret (requires 2 wallet signatures). This secret
-						is saved and used for all your lottery picks. You can also fetch
-						an existing secret using your Walrus Blob ID.
+						click "Generate Secret" to create your personal claim secret.
+						This secret is saved in your browser's local storage and used for
+						all your lottery picks.
 					</li>
 					<li>
 						<strong>Creating a lottery:</strong> Click "Create Lottery" to

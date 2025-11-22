@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useState, useEffect } from "react"
 import { useSecret } from "../../../hooks/useSecret"
 
 interface SecretManagementProps {
@@ -23,10 +23,12 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 
 	const [blobIdInput, setBlobIdInput] = useState<string>("")
 
-	// Notify parent of status changes
-	if (onStatusChange && status) {
-		onStatusChange(status)
-	}
+	// Notify parent of status changes using useEffect
+	useEffect(() => {
+		if (onStatusChange && status) {
+			onStatusChange(status)
+		}
+	}, [status, onStatusChange])
 
 	const handleFetchSecret = () => {
 		handleRetrieveSecretFromWalrus(blobIdInput)
@@ -37,7 +39,7 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 			<h3 className="text-xl font-semibold mb-4">My Secret (One-Time Setup)</h3>
 			<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
 				Generate your secret once and use it for all lottery picks. This allows
-				anonymous prize claiming.
+				anonymous prize claiming. Your secret is stored in browser local storage.
 			</p>
 			<div className="flex flex-col gap-4">
 				{/* Generate Secret Button */}
@@ -48,14 +50,15 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 						className="w-full px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
 					>
 						{isGeneratingSecret
-							? "Generating & Uploading..."
-							: claimSecretHash && walrusBlobId
+							? "Generating..."
+							: claimSecretHash && generatedSecret
 							? "✓ Secret Active - Click to Regenerate"
-							: "Generate Secret & Upload to Walrus"}
+							: "Generate Secret"}
 					</button>
 				</div>
 
-				{/* Fetch Secret Section */}
+				{/* Fetch Secret Section - COMMENTED OUT (Walrus disabled) */}
+				{/*
 				<div className="border-t dark:border-gray-700 pt-4">
 					<h4 className="font-semibold mb-2">Or Fetch Existing Secret</h4>
 					<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
@@ -79,6 +82,7 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 						</button>
 					</div>
 				</div>
+				*/}
 
 				{/* Display Current Secret */}
 				{generatedSecret && claimSecretHash && (
@@ -101,12 +105,15 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 									{claimSecretHash}
 								</code>
 							</div>
+							{/* Walrus Blob ID display - COMMENTED OUT (Walrus disabled) */}
+							{/*
 							<div>
 								<p className="text-xs font-medium mb-1">Walrus Blob ID:</p>
 								<code className="block text-xs bg-white dark:bg-gray-800 p-2 rounded break-all font-mono">
 									{walrusBlobId}
 								</code>
 							</div>
+							*/}
 						</div>
 					</div>
 				)}

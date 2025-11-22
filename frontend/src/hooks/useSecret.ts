@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
-import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
+// import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { keccak256 as keccakHash } from "js-sha3"
-import { walrus, WalrusFile } from "@mysten/walrus"
+// import { walrus, WalrusFile } from "@mysten/walrus"
 
 // Helper function to generate random bytes
 const generateRandomBytes = (length: number): Uint8Array => {
@@ -28,9 +28,9 @@ export const keccak256 = (data: Uint8Array): Uint8Array => {
 }
 
 export const useSecret = (currentAccountAddress: string | undefined) => {
-	const suiClient = useSuiClient()
-	const { mutate: signAndExecute } = useSignAndExecuteTransaction()
-	const client = suiClient.$extend(walrus({ network: "testnet" }))
+	// const suiClient = useSuiClient()
+	// const { mutate: signAndExecute } = useSignAndExecuteTransaction()
+	// const client = suiClient.$extend(walrus({ network: "testnet" }))
 
 	const [claimSecretHash, setClaimSecretHash] = useState<string>("")
 	const [walrusBlobId, setWalrusBlobId] = useState<string>("")
@@ -57,7 +57,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		}
 
 		setIsGeneratingSecret(true)
-		setStatus("Generating claim secret and uploading to Walrus...")
+		setStatus("Generating claim secret...")
 
 		try {
 			// Generate random secret (32 bytes)
@@ -68,6 +68,22 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			const hashBytes = keccak256(secretBytes)
 			const hashHex = bytesToHex(hashBytes)
 
+			// Store the generated values in state and localStorage
+			setGeneratedSecret(secretHex)
+			setClaimSecretHash(hashHex)
+			setWalrusBlobId("") // No Walrus blob ID anymore
+
+			// Persist to localStorage
+			localStorage.setItem("lotterySecret", secretHex)
+			localStorage.setItem("lotterySecretHash", hashHex)
+			localStorage.removeItem("lotteryWalrusBlobId") // Remove old Walrus blob ID if any
+
+			setStatus(
+				`Secret generated and saved to local storage!\nSecret: ${secretHex}\nHash: ${hashHex}\n\n✓ Secret saved! You can now use this for all lottery picks.`
+			)
+			setIsGeneratingSecret(false)
+
+			/* WALRUS UPLOAD - COMMENTED OUT
 			// Create a WalrusFile with the secret as text (hex string)
 			const file = WalrusFile.from({
 				contents: new TextEncoder().encode(secretHex),
@@ -182,14 +198,20 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 					}
 				)
 			})
+			*/
 		} catch (error: any) {
-			console.error("Error generating/uploading secret:", error)
+			console.error("Error generating secret:", error)
 			setStatus(`Error: ${error.message}`)
 			setIsGeneratingSecret(false)
 		}
 	}
 
 	const handleRetrieveSecretFromWalrus = async (blobIdInput: string) => {
+		// WALRUS RETRIEVAL - COMMENTED OUT
+		// Secrets are now stored only in local storage
+		setStatus("Walrus retrieval is disabled. Secrets are now stored in local storage only.")
+
+		/* COMMENTED OUT - WALRUS RETRIEVAL
 		const blobId = blobIdInput.trim()
 
 		if (!blobId) {
@@ -240,6 +262,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		} finally {
 			setIsRetrievingSecret(false)
 		}
+		*/
 	}
 
 	return {

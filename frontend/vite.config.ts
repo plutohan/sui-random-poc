@@ -1,17 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
+// WALRUS - COMMENTED OUT (Walrus disabled)
+// import wasm from 'vite-plugin-wasm'
+// import topLevelAwait from 'vite-plugin-top-level-await'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    wasm(),
-    topLevelAwait(),
+    // WALRUS - COMMENTED OUT (Walrus disabled)
+    // wasm(),
+    // topLevelAwait(),
   ],
   optimizeDeps: {
-    exclude: ['@mysten/walrus'],
+    // WALRUS - COMMENTED OUT (Walrus disabled)
+    // exclude: ['@mysten/walrus'],
     include: ['dataloader', 'use-sync-external-store'],
     esbuildOptions: {
       target: 'esnext',
@@ -25,10 +28,11 @@ export default defineConfig({
     },
   },
   server: {
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-    },
+    // WALRUS - COMMENTED OUT (Walrus disabled, these headers were for WASM)
+    // headers: {
+    //   'Cross-Origin-Opener-Policy': 'same-origin',
+    //   'Cross-Origin-Embedder-Policy': 'require-corp',
+    // },
     proxy: {
       '/api/sui': {
         target: 'https://fullnode.testnet.sui.io',

@@ -159,7 +159,7 @@ entry fun pick_slot(
     let winning_number = 10000 / lottery.slots.length();
     let mut generator = new_generator(r, ctx);
     random_number = generator.generate_u64_in_range(0,10000);
-    won = random_number < winning_number * 5; //@TODO this is for testing purpose
+    won = random_number < winning_number * 3; //@TODO this is for testing purpose
   };
 
   let sender = tx_context::sender(ctx);

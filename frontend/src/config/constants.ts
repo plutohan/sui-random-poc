@@ -4,7 +4,7 @@
 // Your deployed random_poc package ID
 // Find this in your deployment output or Move.toml after publishing
 export const PACKAGE_ID =
-	"0x5e2809ff0aabdefc9ffbaa4654523ef69b66184c437d966065773b76c0afb5b7"
+	"0x9b80581d314984f2fb2624839d50e5ec62079431f797138a4bb4af5e8c8301ab"
 
 // Sui Random object ID (standard on all networks)
 export const RANDOM_OBJECT_ID = "0x8"
