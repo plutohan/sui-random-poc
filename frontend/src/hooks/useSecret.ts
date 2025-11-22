@@ -36,7 +36,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 	const [walrusBlobId, setWalrusBlobId] = useState<string>("")
 	const [generatedSecret, setGeneratedSecret] = useState<string>("")
 	const [isGeneratingSecret, setIsGeneratingSecret] = useState<boolean>(false)
-	const [isRetrievingSecret, setIsRetrievingSecret] = useState<boolean>(false)
+	const [isRetrievingSecret] = useState<boolean>(false)
 	const [status, setStatus] = useState<string>("")
 
 	// Load secret from localStorage on mount
@@ -206,7 +206,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		}
 	}
 
-	const handleRetrieveSecretFromWalrus = async (blobIdInput: string) => {
+	const handleRetrieveSecretFromWalrus = async (_blobIdInput: string) => {
 		// WALRUS RETRIEVAL - COMMENTED OUT
 		// Secrets are now stored only in local storage
 		setStatus("Walrus retrieval is disabled. Secrets are now stored in local storage only.")

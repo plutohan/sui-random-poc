@@ -1,10 +1,10 @@
 import { FC, useState, useEffect, useCallback } from "react"
 import { useSuiClient, useCurrentAccount } from "@mysten/dapp-kit"
-import { PACKAGE_ID, mistToSui } from "../../config/constants"
-import { SecretManagement, useSecret } from "./components/SecretManagement"
-import { LotteryCreation } from "./components/LotteryCreation"
+import { mistToSui } from "../../config/constants"
+import { useSecret } from "./components/SecretManagement"
 import { LotteryPlay } from "./components/LotteryPlay"
 import { LotteryGrid } from "./components/LotteryGrid"
+import { fetchAllLotteries as fetchLotteriesLive } from "./lotteryApi"
 
 interface LotteryData {
 	slots: boolean[]
@@ -130,80 +130,14 @@ const LotteryInteraction: FC = () => {
 	const fetchAllLotteries = async () => {
 		setIsLoadingLotteries(true)
 		try {
-			// Query for LotteryCreatedEvent to find all lottery IDs
-			const eventType = `${PACKAGE_ID}::random_poc::LotteryCreatedEvent`
+			const lotteriesResponse = await fetchLotteriesLive(suiClient, 1, 50)
+			const lotteries = lotteriesResponse.data.map((game) => ({
+				id: game.id,
+				isActive: game.isActive,
+				slotCount: game.slots.length,
+			}))
 
-			let allEvents: any[] = []
-			let hasNextPage = true
-			let cursor = null
-
-			// Query events with pagination
-			while (hasNextPage) {
-				const response: any = await suiClient.queryEvents({
-					query: {
-						MoveEventType: eventType,
-					},
-					cursor,
-					limit: 50,
-				})
-
-				allEvents = [...allEvents, ...response.data]
-				hasNextPage = response.hasNextPage
-				cursor = response.nextCursor
-
-				// Limit to prevent infinite loops
-				if (allEvents.length > 100) break
-			}
-
-			console.log("Found lottery creation events:", allEvents)
-
-			// Extract unique lottery IDs from events
-			const lotteryIds = new Set<string>()
-
-			allEvents.forEach((event) => {
-				if (event.parsedJson) {
-					const lotteryId = event.parsedJson.lottery_id
-					lotteryIds.add(lotteryId)
-				}
-			})
-
-			// Fetch current state for each lottery
-			const lotteries = await Promise.all(
-				Array.from(lotteryIds).map(async (id) => {
-					try {
-						const obj = await suiClient.getObject({
-							id,
-							options: { showContent: true },
-						})
-
-						if (obj.data?.content && "fields" in obj.data.content) {
-							const fields = obj.data.content.fields as any
-
-							// Parse winner
-							const winner =
-								fields.winner && typeof fields.winner === "string"
-									? fields.winner
-									: null
-							const isActive = winner === null
-
-							return {
-								id: obj.data.objectId,
-								isActive,
-								slotCount: fields.slots?.length || 0,
-							}
-						}
-					} catch (error) {
-						console.error(`Error fetching lottery ${id}:`, error)
-					}
-					return null
-				})
-			)
-
-			const validLotteries = lotteries.filter((l) => l !== null) as Array<{
-				id: string
-				isActive: boolean
-				slotCount: number
-			}>
+			const validLotteries = lotteries.filter((l) => l !== null)
 
 			setLotteryObjects(validLotteries)
 
@@ -211,7 +145,7 @@ const LotteryInteraction: FC = () => {
 				setLotteryObjectId(validLotteries[0].id)
 			}
 
-			setStatus(`Found ${validLotteries.length} lottery object(s)`)
+			setStatus(`Loaded ${validLotteries.length} lottery object(s) from mock data`)
 		} catch (error: any) {
 			console.error("Error fetching lotteries:", error)
 			setStatus(
@@ -225,21 +159,7 @@ const LotteryInteraction: FC = () => {
 		<div className="max-w-4xl mx-auto p-6">
 			<h2 className="text-3xl font-bold mb-8">Sui Random Lottery</h2>
 
-			{/* My Secret Section */}
-			<SecretManagement
-				currentAccountAddress={currentAccount?.address}
-				onStatusChange={setStatus}
-			/>
-
-			{/* Create Lottery Section */}
-			<LotteryCreation
-				isLoading={isLoading}
-				onLoadingChange={setIsLoading}
-				onStatusChange={setStatus}
-				onLotteryCreated={fetchAllLotteries}
-			/>
-
-			{/* Lottery Selection */}
+			Lottery Selection
 			<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
 				<div className="flex items-center justify-between mb-2">
 					<label className="block text-sm font-medium">Select Lottery:</label>
