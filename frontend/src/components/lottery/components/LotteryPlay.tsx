@@ -4,8 +4,6 @@ import { Transaction } from "@mysten/sui/transactions"
 import {
 	PACKAGE_ID,
 	RANDOM_OBJECT_ID,
-	LOTTERY_PRIZE,
-	FEE,
 	mistToSui,
 } from "../../../config/constants"
 
@@ -18,6 +16,7 @@ interface LotteryData {
 	prize: number
 	remainingFee: number
 	prizeClaimed: boolean
+	fee: number  // Fee per slot for this lottery
 }
 
 interface LotteryPlayProps {
@@ -50,7 +49,8 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 	const [claimSecret, setClaimSecret] = useState<string>("")
 
 	const handlePickSlot = async () => {
-		if (!lotteryObjectId || isLoading || slotIndex === null) return
+		if (!lotteryObjectId || isLoading || slotIndex === null || !lotteryData)
+			return
 
 		if (!claimSecretHash) {
 			onStatusChange(
@@ -65,7 +65,7 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 		try {
 			const tx = new Transaction()
 
-			const [coin] = tx.splitCoins(tx.gas, [FEE])
+			const [coin] = tx.splitCoins(tx.gas, [lotteryData.fee])
 
 			// Convert secret hash to byte array
 			const secretHashBytes = Array.from(
@@ -289,12 +289,16 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 						<div className="grid grid-cols-2 gap-2 text-sm">
 							<div>
 								<span className="font-semibold">Prize:</span>{" "}
-								{mistToSui(LOTTERY_PRIZE)} SUI
+								{mistToSui(lotteryData.prize)} SUI
 								{lotteryData.prize === 0 && (
 									<span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
 										(Collected ✓)
 									</span>
 								)}
+							</div>
+							<div>
+								<span className="font-semibold">Entry Fee:</span>{" "}
+								{mistToSui(lotteryData.fee)} SUI
 							</div>
 							<div>
 								<span className="font-semibold">Fees Collected:</span>{" "}
@@ -305,7 +309,7 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 									</span>
 								)}
 							</div>
-							<div className="col-span-2">
+							<div>
 								<span className="font-semibold">Status:</span>{" "}
 								{lotteryData.isActive ? (
 									<span className="text-green-600 dark:text-green-400">
@@ -354,7 +358,7 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 						? "Pick Slot (Select from Grid)"
 						: lotteryData.slots[slotIndex]
 						? "Slot Taken"
-						: `Pick Slot ${slotIndex} (Pay ${mistToSui(FEE)} SUI)`}
+						: `Pick Slot ${slotIndex} (Pay ${mistToSui(lotteryData.fee)} SUI)`}
 				</button>
 
 				<div className="flex gap-3">
@@ -396,7 +400,7 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 						{isLoading
 							? "Processing..."
 							: canCollectPrize
-							? `Collect Prize (${mistToSui(LOTTERY_PRIZE)} SUI)`
+							? `Collect Prize (${mistToSui(lotteryData!.prize)} SUI)`
 							: isWinner && lotteryData?.prize === 0
 							? "Prize Collected ✓"
 							: "Collect Prize"}

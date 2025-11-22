@@ -1,6 +1,6 @@
 import { FC, useState, useEffect, useCallback } from "react"
 import { useSuiClient, useCurrentAccount } from "@mysten/dapp-kit"
-import { PACKAGE_ID, LOTTERY_PRIZE, FEE, mistToSui } from "../../config/constants"
+import { PACKAGE_ID, mistToSui } from "../../config/constants"
 import { SecretManagement, useSecret } from "./components/SecretManagement"
 import { LotteryCreation } from "./components/LotteryCreation"
 import { LotteryPlay } from "./components/LotteryPlay"
@@ -15,6 +15,7 @@ interface LotteryData {
 	prize: number
 	remainingFee: number
 	prizeClaimed: boolean
+	fee: number  // Fee per slot for this lottery
 }
 
 const LotteryInteraction: FC = () => {
@@ -74,6 +75,7 @@ const LotteryInteraction: FC = () => {
 				const prize = parseInt(fields.prize || "0")
 				const remainingFee = parseInt(fields.remaining_fee || "0")
 				const prizeClaimed = fields.prize_claimed || false
+				const fee = parseInt(fields.fee || "0")
 
 				setLotteryData({
 					slots,
@@ -84,17 +86,19 @@ const LotteryInteraction: FC = () => {
 					prize,
 					remainingFee,
 					prizeClaimed,
+					fee,
 				})
 
 				setStatus(`Lottery Status:
   Active: ${isActive}
-  Prize: ${mistToSui(LOTTERY_PRIZE)} SUI${
+  Prize: ${mistToSui(prize)} SUI${
 					prizeClaimed
 						? " (Claimed Anonymously ✓)"
 						: prize === 0
 						? " (Collected ✓)"
 						: ""
 				}
+  Entry Fee: ${mistToSui(fee)} SUI per slot
   Remaining Fee: ${mistToSui(remainingFee)} SUI${
 					remainingFee === 0 && winner ? " (Collected ✓)" : ""
 				}
@@ -317,15 +321,15 @@ const LotteryInteraction: FC = () => {
 						all your lottery picks.
 					</li>
 					<li>
-						<strong>Creating a lottery:</strong> Click "Create Lottery" to
-						deploy a new lottery on-chain (costs {mistToSui(LOTTERY_PRIZE)}{" "}
-						SUI for the prize pool).
+						<strong>Creating a lottery:</strong> Click "Create Lottery" and
+						configure the prize pool and entry fee. The prize pool you set
+						will be locked in the lottery contract.
 					</li>
 					<li>
 						<strong>Playing:</strong> Select an existing lottery from the
 						dropdown, click any available slot in the 3x3 grid, then "Pick
-						Slot" (costs {mistToSui(FEE)} SUI per pick). Your secret hash is
-						automatically included with each pick.
+						Slot". The entry fee per lottery is shown in the lottery details.
+						Your secret hash is automatically included with each pick.
 					</li>
 					<li>
 						<strong>Winning:</strong> If you win, your slot turns gold! You

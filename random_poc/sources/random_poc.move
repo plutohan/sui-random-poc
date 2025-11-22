@@ -17,8 +17,9 @@ const ENoWinner: u64 = 6;
 const EInvalidSecret: u64 = 7;
 const EPrizeAlreadyClaimed: u64 = 8;
 const SLOT_COUNT: u64 = 9;
-const LOTTERY_PRIZE: u64 = 100_000_000; // 0.1 SUI in MIST (1 SUI = 1,000,000,000 MIST)
-const FEE: u64 = 15_000_000; // 0.015 SUI in MIST
+// LOTTERY_PRIZE and FEE are now parameters instead of constants
+// const LOTTERY_PRIZE: u64 = 100_000_000; // 0.1 SUI in MIST (1 SUI = 1,000,000,000 MIST)
+// const FEE: u64 = 15_000_000; // 0.015 SUI in MIST
 
 public struct Lottery has key {
   id: UID,
@@ -31,14 +32,16 @@ public struct Lottery has key {
   prize: Balance<SUI>,
   remaining_fee: Balance<SUI>,
   slot_secret_hashes: vector<option::Option<vector<u8>>>,  // Per-slot claim secret hashes
-  prize_claimed: bool
+  prize_claimed: bool,
+  fee: u64  // Store the fee per slot for this lottery
 }
 
 public struct LotteryCreatedEvent has copy, drop, store {
   lottery_id: ID,
   creator: address,
   slot_count: u64,
-  prize: u64
+  prize: u64,
+  fee: u64
 }
 
 public struct PickedEvent has copy, drop, store {
@@ -55,10 +58,11 @@ public struct WinnerClaimInfoEvent has copy, drop, store {
 
 public fun create_lottery(
   payment: Coin<SUI>,
+  fee: u64,  // Fee per slot in MIST
   ctx: &mut tx_context::TxContext
 ) {
-  // Verify payment
-  assert!(coin::value(&payment) == LOTTERY_PRIZE, EInsufficientPayment);
+  // Get the prize amount from the payment coin
+  let prize_amount = coin::value(&payment);
 
   let creator = tx_context::sender(ctx);
   let lottery = Lottery {
@@ -72,14 +76,16 @@ public fun create_lottery(
     prize: coin::into_balance(payment),
     remaining_fee: balance::zero(),
     slot_secret_hashes: make_empty_option_vec(SLOT_COUNT),
-    prize_claimed: false
+    prize_claimed: false,
+    fee  // Store the fee for this lottery
   };
 
   event::emit(LotteryCreatedEvent {
     lottery_id: object::id(&lottery),
     creator,
     slot_count: SLOT_COUNT,
-    prize: LOTTERY_PRIZE
+    prize: prize_amount,
+    fee
   });
 
   transfer::share_object(lottery);
@@ -132,7 +138,7 @@ entry fun pick_slot(
 ):u64 {
   assert!(option::is_none(&lottery.winner), ENotActiveLottery);
   assert!(lottery.slots[slot_index] == false, EInvalidSlot);
-  assert!(coin::value(&payment) == FEE, EInsufficientPayment);
+  assert!(coin::value(&payment) == lottery.fee, EInsufficientPayment);
 
   // Collect the fee
   balance::join(&mut lottery.remaining_fee, coin::into_balance(payment));
@@ -290,4 +296,8 @@ public fun get_last_picker(lottery: &Lottery): option::Option<address> {
 
 public fun get_last_slot(lottery: &Lottery): u64 {
   lottery.last_slot
+}
+
+public fun get_fee(lottery: &Lottery): u64 {
+  lottery.fee
 }
