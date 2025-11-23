@@ -21,59 +21,87 @@ const LotteryCard: FC<Props> = ({ game, onSelect }) => {
 		<button
 			type="button"
 			onClick={() => onSelect(game.id)}
-			className={`group w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl transition transform hover:-translate-y-0.5 ${
-				isActive ? "" : "shadow-inner shadow-gray-500/40 dark:shadow-black/40 opacity-80"
-			}`}
+			className={`group w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 ${isActive ? "animate-slide-up" : "opacity-70"
+				}`}
 			aria-label={`${title} lottery ${statusLabel}`}
 			aria-disabled={!isActive}
 		>
-			<div className="relative aspect-square w-full overflow-hidden rounded-xl shadow-sm bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700">
-				<div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-1 p-3">
-					{slots.slice(0, 9).map((isTaken, index) => {
-						const isWinning = !isActive && index === game.winningSlot
-						const cellClass = isWinning
-							? "bg-gradient-to-br from-yellow-400 to-yellow-600"
-							: isTaken
-							? "bg-red-500"
-							: isActive
-							? "bg-blue-500/80"
-							: "bg-gray-400/70"
-						return (
-							<div
-								key={index}
-								className={`${cellClass} rounded-md border border-white/20`}
-								aria-hidden="true"
-							/>
-						)
-					})}
-				</div>
-				<div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs font-semibold text-white drop-shadow">
-					<span className="truncate">{title}</span>
-					<span className="px-2 py-0.5 rounded-full bg-black/50">
-						{isActive ? `${availableSlots} open` : "Closed"}
+			<div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-lg bg-gradient-to-br from-emerald-500 via-cyan-500 to-purple-500 p-1">
+				{/* Card Inner Content */}
+				<div className="relative w-full h-full bg-white dark:bg-gray-950 rounded-xl overflow-hidden">
+					{/* 3x3 Grid */}
+					<div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-1 p-4">
+						{slots.slice(0, 9).map((isTaken, index) => {
+							const isWinning = !isActive && index === game.winningSlot
+							const cellClass = isWinning
+								? "bg-gradient-to-br from-yellow-400 to-orange-500 animate-pulse-glow"
+								: isTaken
+									? "bg-gradient-to-br from-red-400 to-red-600"
+									: isActive
+										? "bg-gradient-to-br from-blue-400 to-purple-500 group-hover:animate-shimmer"
+										: "bg-gray-300 dark:bg-gray-700"
+							return (
+								<div
+									key={index}
+									className={`${cellClass} rounded-lg border-2 border-white/30 shadow-sm transition-all duration-300 ${isActive && !isTaken ? "group-hover:scale-110 group-hover:shadow-md" : ""
+										}`}
+									aria-hidden="true"
+								>
+									{isWinning && (
+										<div className="w-full h-full flex items-center justify-center text-2xl">
+											🏆
+										</div>
+									)}
+								</div>
+							)
+						})}
+					</div>
+
+					{/* Status Badge */}
+					<span
+						className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-bold shadow-md z-10 ${isActive
+							? "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
+							: "bg-gradient-to-r from-red-400 to-rose-500 text-white"
+							}`}
+						aria-label={`Status: ${statusLabel}`}
+					>
+						{isActive ? "🟢 LIVE" : "🔴 CLOSED"}
 					</span>
+
+					{/* Bottom Info */}
+					<div className="absolute bottom-0 left-0 right-0 bg-black/70 dark:bg-black/80 p-3 backdrop-blur-md">
+						<div className="flex items-center justify-between text-xs font-semibold text-white">
+							<span className="truncate">{title}</span>
+							<span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+								{isActive ? `${availableSlots} 🎯` : "Closed"}
+							</span>
+						</div>
+					</div>
 				</div>
-				<span
-					className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-semibold ${
-						isActive ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
-					}`}
-					aria-label={`Status: ${statusLabel}`}
-				>
-					{statusLabel}
-				</span>
 			</div>
-			<div className="mt-3 space-y-1">
+
+			{/* Card Footer */}
+			<div className="mt-3 space-y-1 px-1">
 				<div className="flex items-center justify-between gap-2">
-					<p className="font-semibold text-gray-900 dark:text-gray-100">
+					<p className="font-bold text-gray-900 dark:text-gray-100">
 						{title}
 					</p>
-					<span className="text-xs rounded-full bg-gray-200 px-2 py-1 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+					<span className={`text-xs font-semibold rounded-full px-3 py-1 ${isActive
+						? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+						: "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+						}`}>
 						{isActive ? "Live" : "Closed"}
 					</span>
 				</div>
 				<p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
-				<div className="text-xs text-gray-500 dark:text-gray-400">
-					Updated {game.createdAt || "recently"} • Prize {game.prize} SUI
+				<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+					<span>💰 {game.prize} SUI</span>
+					{game.createdAt && (
+						<>
+							<span>•</span>
+							<span>📅 {game.createdAt}</span>
+						</>
+					)}
 				</div>
 			</div>
 		</button>
