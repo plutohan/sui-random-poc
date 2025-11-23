@@ -32,7 +32,10 @@ export const keccak256 = (data: Uint8Array): Uint8Array => {
 	return hashBytes
 }
 
-const getAllCaps = async (suiClient: SuiClient, currentAccountAddress: string): Promise<CapObjectInfo[]> => {
+const getAllCaps = async (
+	suiClient: SuiClient,
+	currentAccountAddress: string
+): Promise<CapObjectInfo[]> => {
 	console.log(
 		`\n🔍 Loading all Cap objects for address: ${currentAccountAddress}`
 	)
@@ -148,8 +151,6 @@ const getBlobIdsFromAllowlist = async (
 	return blobIds
 }
 
-
-
 type CapObjectInfo = {
 	id: string
 	allowlistId: string
@@ -159,7 +160,6 @@ export type AllowlistBlobOption = {
 	blobId: string
 	allowlistId: string
 }
-
 
 export const useSecret = (currentAccountAddress: string | undefined) => {
 	const suiClient = useSuiClient()
@@ -221,11 +221,16 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 				const collected: AllowlistBlobOption[] = []
 
 				for (const allowlistId of allowlistIds) {
-					const blobIds = await getBlobIdsFromAllowlist(allowlistId, suiClient)
+					const blobIds = await getBlobIdsFromAllowlist(
+						allowlistId,
+						suiClient
+					)
 					if (isCancelled) {
 						return
 					}
-					console.log(`✅ Found total ${blobIds.length} blobs in the user's allowlist(${allowlistId})`)
+					console.log(
+						`✅ Found total ${blobIds.length} blobs in the user's allowlist(${allowlistId})`
+					)
 					blobIds.forEach((blobId) => {
 						collected.push({
 							blobId,
@@ -238,13 +243,12 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 					return
 				}
 
-
 				console.log("collected", collected)
 				setBlobOptions(collected)
 			} catch (error) {
 				console.error("⚠️ Failed to load Walrus blob IDs:", error)
 				setBlobOptions([])
-			} 
+			}
 		}
 
 		fetchBlobOptions()
@@ -437,13 +441,20 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			// Step 1: Encrypt with Seal
 			const { encryptWithSeal } = await import("../utils/sealEncryption")
 			const { encryptedData, encryptionId: newEncryptionId } =
-				await encryptWithSeal(generatedSecret, allowlistId, PACKAGE_ID, suiClient)
+				await encryptWithSeal(
+					generatedSecret,
+					allowlistId,
+					PACKAGE_ID,
+					suiClient
+				)
 
 			setStatus("Uploading encrypted secret to Walrus...")
 
 			// Step 2: Upload to Walrus
 			const { uploadToWalrus } = await import("../utils/walrusStorage")
-			const { blobId, status: uploadStatus } = await uploadToWalrus(encryptedData)
+			const { blobId, status: uploadStatus } = await uploadToWalrus(
+				encryptedData
+			)
 
 			setStatus("Publishing blob to allowlist...")
 
@@ -467,7 +478,10 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 					{ transaction: tx },
 					{
 						onSuccess: async (result) => {
-							console.log("Publish transaction successful:", result.digest)
+							console.log(
+								"Publish transaction successful:",
+								result.digest
+							)
 							console.log(
 								`🔗 SuiScan: https://suiscan.xyz/testnet/tx/${result.digest}`
 							)
@@ -476,7 +490,9 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 							setWalrusBlobId(blobId)
 							setBlobOptions((prev) => {
 								if (
-									prev.some((option) => option.blobId === blobId) ||
+									prev.some(
+										(option) => option.blobId === blobId
+									) ||
 									!allowlistId
 								) {
 									return prev
@@ -499,7 +515,9 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 						},
 						onError: (error) => {
 							console.error("Publish transaction failed:", error)
-							setStatus(`Error publishing to allowlist: ${error.message}`)
+							setStatus(
+								`Error publishing to allowlist: ${error.message}`
+							)
 							setIsEncryptingAndUploading(false)
 							reject(error)
 						},
@@ -536,7 +554,9 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 
 		try {
 			// Step 1: Download encrypted data from Walrus
-			const { downloadFromWalrus } = await import("../utils/walrusStorage")
+			const { downloadFromWalrus } = await import(
+				"../utils/walrusStorage"
+			)
 			const encryptedData = await downloadFromWalrus(blobId)
 
 			setStatus("Decrypting secret with Seal...")
