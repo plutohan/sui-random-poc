@@ -168,7 +168,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 
 	const [claimSecretHash, setClaimSecretHash] = useState<string>("")
 	const [walrusBlobId, setWalrusBlobId] = useState<string>("")
-	const [encryptionId, setEncryptionId] = useState<string>("")
 	const [generatedSecret, setGeneratedSecret] = useState<string>("")
 	const [isGeneratingSecret, setIsGeneratingSecret] = useState<boolean>(false)
 	const [isEncryptingAndUploading, setIsEncryptingAndUploading] =
@@ -181,13 +180,9 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 	// Load secret from localStorage on mount
 	useEffect(() => {
 		const storedHash = localStorage.getItem("lotterySecretHash")
-		const storedEncryptionId = localStorage.getItem("lotteryEncryptionId")
-		// const storedBlobId = localStorage.getItem("lotteryWalrusBlobId")
 		const storedSecret = localStorage.getItem("lotterySecret")
 
 		if (storedHash) setClaimSecretHash(storedHash)
-		// if (storedBlobId) setWalrusBlobId(storedBlobId)
-		if (storedEncryptionId) setEncryptionId(storedEncryptionId)
 		if (storedSecret) setGeneratedSecret(storedSecret)
 	}, [])
 
@@ -477,7 +472,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 
 							// Step 4: Store results
 							setWalrusBlobId(blobId)
-							setEncryptionId(newEncryptionId)
 							setBlobOptions((prev) => {
 								if (
 									prev.some((option) => option.blobId === blobId) ||
@@ -495,11 +489,8 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 								]
 							})
 
-							// localStorage.setItem("lotteryWalrusBlobId", blobId)
-							localStorage.setItem("lotteryEncryptionId", newEncryptionId)
-
 							setStatus(
-								`✓ Secret encrypted and uploaded!\nBlob ID: ${blobId}\nEncryption ID: ${newEncryptionId}\nStatus: ${uploadStatus}\n\nYour secret is now securely stored on Walrus with Seal encryption!`
+								`✓ Secret encrypted and uploaded!\nBlob ID: ${blobId}\nStatus: ${uploadStatus}\n\nYour secret is now securely stored on Walrus with Seal encryption!`
 							)
 							setIsEncryptingAndUploading(false)
 							resolve()
@@ -526,7 +517,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 	// Fetch and decrypt secret from Walrus
 	const handleFetchAndDecryptSecret = async (
 		blobId: string,
-		encryptionIdInput: string,
 		allowlistId: string
 	) => {
 		if (!currentAccountAddress) {
@@ -534,8 +524,8 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			return
 		}
 
-		if (!blobId || !encryptionIdInput || !allowlistId) {
-			setStatus("Please provide blob ID, encryption ID, and allowlist ID")
+		if (!blobId || !allowlistId) {
+			setStatus("Please provide blob ID and allowlist ID")
 			return
 		}
 
@@ -576,7 +566,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			setGeneratedSecret(decryptedSecret)
 			setClaimSecretHash(hashHex)
 			setWalrusBlobId(blobId)
-			setEncryptionId(encryptionIdInput)
 			setBlobOptions((prev) => {
 				if (
 					prev.some((option) => option.blobId === blobId) ||
@@ -597,7 +586,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			localStorage.setItem("lotterySecret", decryptedSecret)
 			localStorage.setItem("lotterySecretHash", hashHex)
 			localStorage.setItem("lotteryWalrusBlobId", blobId)
-			localStorage.setItem("lotteryEncryptionId", encryptionIdInput)
 
 			setStatus(
 				`✓ Secret fetched and decrypted!\nSecret: ${decryptedSecret}\nHash: ${hashHex}\n\nYou can now use this secret for lottery picks!`
@@ -616,7 +604,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 	return {
 		claimSecretHash,
 		walrusBlobId,
-		encryptionId,
 		generatedSecret,
 		isGeneratingSecret,
 		isEncryptingAndUploading,

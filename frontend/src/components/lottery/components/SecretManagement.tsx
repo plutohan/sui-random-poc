@@ -14,7 +14,6 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 	const {
 		claimSecretHash,
 		walrusBlobId,
-		encryptionId,
 		generatedSecret,
 		isGeneratingSecret,
 		isEncryptingAndUploading,
@@ -36,9 +35,7 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 
 	const [allowlistIdInput, setAllowlistIdInput] = useState<string>("")
 	const [blobIdInput, setBlobIdInput] = useState<string>("")
-	const [encryptionIdInput, setEncryptionIdInput] = useState<string>("")
 	const [allowlistIdForDecrypt, setAllowlistIdForDecrypt] = useState<string>("")
-	const [_, setBlobOptions] = useState<AllowlistBlobOption[]>([])
 
 	// Auto-populate allowlist ID when it's available
 	useEffect(() => {
@@ -49,19 +46,10 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 
 	// Auto-populate fields for decryption when available
 	useEffect(() => {
-		// if (walrusBlobId && !blobIdInput) {
-		// 	setBlobIdInput(walrusBlobId)
-		// }
-		if (encryptionId && !encryptionIdInput) {
-			setEncryptionIdInput(encryptionId)
-		}
 		if (allowlistId && !allowlistIdForDecrypt) {
 			setAllowlistIdForDecrypt(allowlistId)
 		}
-		if (blobOptions.length > 0) {
-			setBlobOptions(blobOptions)
-		}
-	}, [encryptionId, allowlistId, blobOptions, encryptionIdInput, allowlistIdForDecrypt])
+	}, [allowlistId, allowlistIdForDecrypt])
 
 	// Notify parent of status changes using useEffect
 	useEffect(() => {
@@ -203,12 +191,12 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 					>
 						{isEncryptingAndUploading
 							? "Processing..."
-							: walrusBlobId && encryptionId
+							: walrusBlobId
 							? "✓ Encrypted & Uploaded - Click to Re-upload"
 							: "Encrypt & Upload"}
 					</button>
 
-					{walrusBlobId && encryptionId && (
+					{walrusBlobId && (
 						<div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded">
 							<p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-2">
 								✓ Secret encrypted and uploaded to Walrus!
@@ -218,12 +206,6 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 									<p className="text-xs font-medium mb-1">Walrus Blob ID:</p>
 									<code className="block text-xs bg-white dark:bg-gray-800 p-2 rounded break-all font-mono">
 										{walrusBlobId}
-									</code>
-								</div>
-								<div>
-									<p className="text-xs font-medium mb-1">Encryption ID:</p>
-									<code className="block text-xs bg-white dark:bg-gray-800 p-2 rounded break-all font-mono">
-										{encryptionId}
 									</code>
 								</div>
 							</div>
@@ -253,7 +235,17 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 										? blobIdInput
 										: ""
 								}
-								onChange={(e) => setBlobIdInput(e.target.value)}
+								onChange={(e) => {
+									const selectedBlobId = e.target.value
+									setBlobIdInput(selectedBlobId)
+									// Auto-populate allowlist ID for the selected blob
+									const selectedOption = blobOptions.find(
+										(opt) => opt.blobId === selectedBlobId
+									)
+									if (selectedOption) {
+										setAllowlistIdForDecrypt(selectedOption.allowlistId)
+									}
+								}}
 								className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
 							>
 								<option value="" disabled>
@@ -279,18 +271,6 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 					</div>
 					<div>
 						<label className="block text-xs font-medium mb-1">
-							Encryption ID:
-						</label>
-						<input
-							type="text"
-							value={encryptionIdInput}
-							onChange={(e) => setEncryptionIdInput(e.target.value)}
-							placeholder="Enter Encryption ID (auto-filled from Step 3)"
-							className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
-						/>
-					</div>
-					<div>
-						<label className="block text-xs font-medium mb-1">
 							Allowlist ID:
 						</label>
 						<input
@@ -305,14 +285,12 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 						onClick={() =>
 							handleFetchAndDecryptSecret(
 								blobIdInput,
-								encryptionIdInput,
 								allowlistIdForDecrypt
 							)
 						}
 						disabled={
 							isFetchingAndDecrypting ||
 							!blobIdInput.trim() ||
-							!encryptionIdInput.trim() ||
 							!allowlistIdForDecrypt.trim()
 						}
 						className="w-full px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
