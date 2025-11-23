@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-// WALRUS - COMMENTED OUT (Walrus disabled)
+// WASM disabled - not needed for basic functionality
 // import wasm from 'vite-plugin-wasm'
 // import topLevelAwait from 'vite-plugin-top-level-await'
 
@@ -8,7 +8,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
-    // WALRUS - COMMENTED OUT (Walrus disabled)
+    // WASM disabled
     // wasm(),
     // topLevelAwait(),
   ],
@@ -28,11 +28,10 @@ export default defineConfig({
     },
   },
   server: {
-    // WALRUS - COMMENTED OUT (Walrus disabled, these headers were for WASM)
-    // headers: {
-    //   'Cross-Origin-Opener-Policy': 'same-origin',
-    //   'Cross-Origin-Embedder-Policy': 'require-corp',
-    // },
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
     proxy: {
       '/api/sui': {
         target: 'https://fullnode.testnet.sui.io',

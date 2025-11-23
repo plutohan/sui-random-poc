@@ -40,7 +40,7 @@ export const OwnedObjects = () => {
       )}
       <div className="space-y-2">
         {data.data.map((object) => (
-          <SuiObject objectId={object.data?.objectId as string} />
+          <SuiObject key={object.data?.objectId} objectId={object.data?.objectId as string} />
         ))}
       </div>
     </div>

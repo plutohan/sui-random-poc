@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react"
-// import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
+import {
+	useSignAndExecuteTransaction,
+	useSignPersonalMessage,
+	useSuiClient,
+} from "@mysten/dapp-kit"
 import { keccak256 as keccakHash } from "js-sha3"
-// import { walrus, WalrusFile } from "@mysten/walrus"
+import { PACKAGE_ID } from "../config/constants"
 
 // Helper function to generate random bytes
 const generateRandomBytes = (length: number): Uint8Array => {
@@ -28,25 +32,31 @@ export const keccak256 = (data: Uint8Array): Uint8Array => {
 }
 
 export const useSecret = (currentAccountAddress: string | undefined) => {
-	// const suiClient = useSuiClient()
-	// const { mutate: signAndExecute } = useSignAndExecuteTransaction()
-	// const client = suiClient.$extend(walrus({ network: "testnet" }))
+	const suiClient = useSuiClient()
+	const { mutate: signAndExecute } = useSignAndExecuteTransaction()
+	const { mutateAsync: signPersonalMessage } = useSignPersonalMessage()
 
 	const [claimSecretHash, setClaimSecretHash] = useState<string>("")
 	const [walrusBlobId, setWalrusBlobId] = useState<string>("")
+	const [encryptionId, setEncryptionId] = useState<string>("")
 	const [generatedSecret, setGeneratedSecret] = useState<string>("")
 	const [isGeneratingSecret, setIsGeneratingSecret] = useState<boolean>(false)
-	const [isRetrievingSecret] = useState<boolean>(false)
+	const [isEncryptingAndUploading, setIsEncryptingAndUploading] =
+		useState<boolean>(false)
+	const [isFetchingAndDecrypting, setIsFetchingAndDecrypting] =
+		useState<boolean>(false)
 	const [status, setStatus] = useState<string>("")
 
 	// Load secret from localStorage on mount
 	useEffect(() => {
 		const storedHash = localStorage.getItem("lotterySecretHash")
 		const storedBlobId = localStorage.getItem("lotteryWalrusBlobId")
+		const storedEncryptionId = localStorage.getItem("lotteryEncryptionId")
 		const storedSecret = localStorage.getItem("lotterySecret")
 
 		if (storedHash) setClaimSecretHash(storedHash)
 		if (storedBlobId) setWalrusBlobId(storedBlobId)
+		if (storedEncryptionId) setEncryptionId(storedEncryptionId)
 		if (storedSecret) setGeneratedSecret(storedSecret)
 	}, [])
 
@@ -206,73 +216,186 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		}
 	}
 
-	const handleRetrieveSecretFromWalrus = async (_blobIdInput: string) => {
-		// WALRUS RETRIEVAL - COMMENTED OUT
-		// Secrets are now stored only in local storage
-		setStatus("Walrus retrieval is disabled. Secrets are now stored in local storage only.")
-
-		/* COMMENTED OUT - WALRUS RETRIEVAL
-		const blobId = blobIdInput.trim()
-
-		if (!blobId) {
-			setStatus("Please enter a Walrus Blob ID")
+	// Encrypt and upload secret to Walrus with Seal
+	const handleEncryptAndUploadSecret = async (
+		allowlistId: string,
+		capId: string
+	) => {
+		if (!currentAccountAddress) {
+			setStatus("Please connect your wallet first")
 			return
 		}
 
-		setIsRetrievingSecret(true)
-		setStatus("Retrieving secret from Walrus...")
+		if (!generatedSecret) {
+			setStatus("Please generate a secret first")
+			return
+		}
+
+		if (!allowlistId || !capId) {
+			setStatus("Please create your allowlist first (Step 1)")
+			return
+		}
+
+		setIsEncryptingAndUploading(true)
+		setStatus("Encrypting secret with Seal...")
 
 		try {
-			console.log("Fetching blob from Walrus, Blob ID:", blobId)
+			// Step 1: Encrypt with Seal
+			const { encryptWithSeal } = await import("../utils/sealEncryption")
+			const { encryptedData, encryptionId: newEncryptionId } =
+				await encryptWithSeal(generatedSecret, allowlistId, PACKAGE_ID, suiClient)
 
-			// Fetch the blob from Walrus and convert to file
-			const blob = await client.walrus.getBlob({ blobId })
-			console.log("Got blob:", blob)
+			setStatus("Uploading encrypted secret to Walrus...")
 
-			const file = await blob.asFile()
-			console.log("Converted to file:", file)
+			// Step 2: Upload to Walrus
+			const { uploadToWalrus } = await import("../utils/walrusStorage")
+			const { blobId, status: uploadStatus } = await uploadToWalrus(encryptedData)
 
-			// Read the file content
-			const blobText = await file.text()
-			console.log("Retrieved secret from Walrus:", blobText)
+			setStatus("Publishing blob to allowlist...")
 
-			setGeneratedSecret(blobText)
+			// Step 3: Publish to allowlist
+			const { Transaction } = await import("@mysten/sui/transactions")
+			const tx = new Transaction()
 
-			// Compute hash of the secret for use in picks
-			const secretBytes = Array.from(
-				blobText.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || []
+			tx.moveCall({
+				target: `${PACKAGE_ID}::allowlist::publish`,
+				arguments: [
+					tx.object(allowlistId),
+					tx.object(capId),
+					tx.pure.string(blobId),
+				],
+			})
+
+			tx.setGasBudget(10000000)
+
+			await new Promise<void>((resolve, reject) => {
+				signAndExecute(
+					{ transaction: tx },
+					{
+						onSuccess: async (result) => {
+							console.log("Publish transaction successful:", result.digest)
+							console.log(
+								`🔗 SuiScan: https://suiscan.xyz/testnet/tx/${result.digest}`
+							)
+
+							// Step 4: Store results
+							setWalrusBlobId(blobId)
+							setEncryptionId(newEncryptionId)
+
+							localStorage.setItem("lotteryWalrusBlobId", blobId)
+							localStorage.setItem("lotteryEncryptionId", newEncryptionId)
+
+							setStatus(
+								`✓ Secret encrypted and uploaded!\nBlob ID: ${blobId}\nEncryption ID: ${newEncryptionId}\nStatus: ${uploadStatus}\n\nYour secret is now securely stored on Walrus with Seal encryption!`
+							)
+							setIsEncryptingAndUploading(false)
+							resolve()
+						},
+						onError: (error) => {
+							console.error("Publish transaction failed:", error)
+							setStatus(`Error publishing to allowlist: ${error.message}`)
+							setIsEncryptingAndUploading(false)
+							reject(error)
+						},
+					}
+				)
+			})
+
+			return { blobId, encryptionId: newEncryptionId }
+		} catch (error: any) {
+			console.error("Error encrypting/uploading secret:", error)
+			setStatus(`Error: ${error.message}`)
+			setIsEncryptingAndUploading(false)
+			throw error
+		}
+	}
+
+	// Fetch and decrypt secret from Walrus
+	const handleFetchAndDecryptSecret = async (
+		blobId: string,
+		encryptionIdInput: string,
+		allowlistId: string
+	) => {
+		if (!currentAccountAddress) {
+			setStatus("Please connect your wallet first")
+			return
+		}
+
+		if (!blobId || !encryptionIdInput || !allowlistId) {
+			setStatus("Please provide blob ID, encryption ID, and allowlist ID")
+			return
+		}
+
+		setIsFetchingAndDecrypting(true)
+		setStatus("Downloading encrypted secret from Walrus...")
+
+		try {
+			// Step 1: Download encrypted data from Walrus
+			const { downloadFromWalrus } = await import("../utils/walrusStorage")
+			const encryptedData = await downloadFromWalrus(blobId)
+
+			setStatus("Decrypting secret with Seal...")
+
+			// Step 2: Decrypt with Seal
+			const { decryptWithSeal } = await import("../utils/sealEncryption")
+			const decryptedSecret = await decryptWithSeal(
+				encryptedData,
+				encryptionIdInput,
+				allowlistId,
+				PACKAGE_ID,
+				suiClient,
+				currentAccountAddress,
+				signPersonalMessage
 			)
-			const hashBytes = keccak256(new Uint8Array(secretBytes))
+
+			console.log("Secret decrypted successfully!")
+
+			// Step 3: Compute hash
+			const { fromHex } = await import("@mysten/sui/utils")
+			const secretBytes = fromHex(
+				decryptedSecret.startsWith("0x")
+					? decryptedSecret.slice(2)
+					: decryptedSecret
+			)
+			const hashBytes = keccak256(secretBytes)
 			const hashHex = bytesToHex(hashBytes)
 
+			// Step 4: Update state and localStorage
+			setGeneratedSecret(decryptedSecret)
 			setClaimSecretHash(hashHex)
 			setWalrusBlobId(blobId)
+			setEncryptionId(encryptionIdInput)
 
-			// Save to localStorage
-			localStorage.setItem("lotterySecret", blobText)
+			localStorage.setItem("lotterySecret", decryptedSecret)
 			localStorage.setItem("lotterySecretHash", hashHex)
 			localStorage.setItem("lotteryWalrusBlobId", blobId)
+			localStorage.setItem("lotteryEncryptionId", encryptionIdInput)
 
 			setStatus(
-				`✓ Secret retrieved and saved! Length: ${blobText.length} chars\nYou can now use this secret for lottery picks.`
+				`✓ Secret fetched and decrypted!\nSecret: ${decryptedSecret}\nHash: ${hashHex}\n\nYou can now use this secret for lottery picks!`
 			)
+			setIsFetchingAndDecrypting(false)
+
+			return { secret: decryptedSecret, hash: hashHex }
 		} catch (error: any) {
-			console.error("Error retrieving secret from Walrus:", error)
-			setStatus(`Error retrieving secret: ${error.message}`)
-		} finally {
-			setIsRetrievingSecret(false)
+			console.error("Error fetching/decrypting secret:", error)
+			setStatus(`Error: ${error.message}`)
+			setIsFetchingAndDecrypting(false)
+			throw error
 		}
-		*/
 	}
 
 	return {
 		claimSecretHash,
 		walrusBlobId,
+		encryptionId,
 		generatedSecret,
 		isGeneratingSecret,
-		isRetrievingSecret,
+		isEncryptingAndUploading,
+		isFetchingAndDecrypting,
 		status,
 		handleGenerateAndUploadSecret,
-		handleRetrieveSecretFromWalrus,
+		handleEncryptAndUploadSecret,
+		handleFetchAndDecryptSecret,
 	}
 }
