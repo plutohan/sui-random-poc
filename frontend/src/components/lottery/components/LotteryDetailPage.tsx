@@ -262,14 +262,15 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 				<button
 					type="button"
 					onClick={() => navigate("/")}
-					className="text-sm text-blue-600 hover:underline"
+					className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5"
 					aria-label="Back to lottery list"
 				>
-					← Back to lotteries
+					← Back to Lotteries
 				</button>
-				<div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-					<p className="text-gray-700 dark:text-gray-200">
-						The requested lottery could not be found.
+				<div className="glass rounded-2xl shadow-xl p-8 text-center">
+					<div className="text-6xl mb-4">🎰</div>
+					<p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+						Lottery not found
 					</p>
 				</div>
 			</section>
@@ -279,18 +280,18 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 	const isActive = lottery?.isActive ?? false
 
 	return (
-		<section className="space-y-6">
+		<section className="space-y-6 animate-slide-up">
 			<div className="flex items-center justify-between gap-3">
 				<button
 					type="button"
 					onClick={() => navigate("/")}
-					className="text-sm text-blue-600 hover:underline"
+					className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5"
 					aria-label="Back to lottery list"
 				>
-					← Back to lotteries
+					← Back
 				</button>
 			</div>
-			<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 md:p-8">
+			<div className="glass rounded-3xl shadow-xl p-6 md:p-8 border border-emerald-200/20 dark:border-emerald-500/20">
 				{isLoading && (
 					<div className="animate-pulse h-24 rounded-xl bg-gray-100 dark:bg-gray-700" aria-busy="true" />
 				)}
@@ -298,40 +299,38 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 					<div className="space-y-4">
 						<div className="flex items-start justify-between gap-3">
 							<div>
-								<h2 className="text-3xl font-bold">Lottery {lottery.id.slice(0, 10)}...</h2>
-								<p className="text-gray-600 dark:text-gray-400">
-									Slots: {lottery.slotCount} • Prize: {lottery.prize} SUI • Fee: {lottery.fee} SUI • Open:{" "}
-									{availableSlots}
+								<h2 className="text-3xl font-bold text-gradient">Lottery {lottery.id.slice(0, 10)}...</h2>
+								<p className="text-gray-600 dark:text-gray-400 mt-1">
+									🎯 {lottery.slotCount} slots • 💰 {lottery.prize} SUI prize • 💵 {lottery.fee} SUI fee • 🔓 {availableSlots} open
 								</p>
 							</div>
 							<span
-								className={`rounded-full px-3 py-1 text-xs font-semibold ${
-									isActive ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
-								}`}
+								className={`rounded-full px-4 py-2 text-sm font-bold shadow-md ${isActive ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white" : "bg-gradient-to-r from-red-400 to-rose-500 text-white"
+									}`}
 							>
-								{isActive ? "Active" : "Ended"}
+								{isActive ? "🟢 LIVE" : "🔴 ENDED"}
 							</span>
 						</div>
-						<div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
-							<div className="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
-								<div className="text-xs text-gray-500 dark:text-gray-400">Status</div>
-								<div className="font-semibold">{isActive ? "Active" : "Ended"}</div>
+						<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+							<div className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 p-4 border border-purple-200/30 dark:border-purple-400/40">
+								<div className="text-xs text-purple-700 dark:text-purple-300 font-semibold">📊 Status</div>
+								<div className="font-bold text-lg mt-1 text-gray-900 dark:text-white">{isActive ? "Active" : "Ended"}</div>
 							</div>
-							<div className="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
-								<div className="text-xs text-gray-500 dark:text-gray-400">Prize Pool</div>
-								<div className="font-semibold">{lottery.prize} SUI</div>
+							<div className="rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 p-4 border border-blue-200/30 dark:border-blue-400/40">
+								<div className="text-xs text-blue-700 dark:text-blue-300 font-semibold">💰 Prize Pool</div>
+								<div className="font-bold text-lg mt-1 text-gray-900 dark:text-white">{lottery.prize} SUI</div>
 							</div>
-							<div className="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
-								<div className="text-xs text-gray-500 dark:text-gray-400">Remaining Fee</div>
-								<div className="font-semibold">{lottery.remainingFee} SUI</div>
+							<div className="rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 p-4 border border-green-200/30 dark:border-green-400/40">
+								<div className="text-xs text-green-700 dark:text-green-300 font-semibold">💵 Creator Fee</div>
+								<div className="font-bold text-lg mt-1 text-gray-900 dark:text-white">{lottery.remainingFee} SUI</div>
 							</div>
-							<div className="rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
-								<div className="text-xs text-gray-500 dark:text-gray-400">Updated</div>
-								<div className="font-semibold">{lottery.createdAt || "recently"}</div>
+							<div className="rounded-xl bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-orange-900/50 dark:to-yellow-900/50 p-4 border border-orange-200/30 dark:border-orange-400/40">
+								<div className="text-xs text-orange-700 dark:text-orange-300 font-semibold">📅 Updated</div>
+								<div className="font-bold text-sm mt-1 text-gray-900 dark:text-white">{lottery.createdAt || "Recently"}</div>
 							</div>
 						</div>
-						<p className="text-xs text-gray-500 dark:text-gray-400">
-							Data is loaded directly from the on-chain lottery objects.
+						<p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+							⛓️ Data loaded directly from on-chain lottery objects
 						</p>
 					</div>
 				)}
@@ -346,99 +345,110 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 				/>
 			)}
 			{lottery && (
-				<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-3">
-					<h4 className="text-lg font-semibold">Payouts</h4>
-					<div className="grid gap-3 md:grid-cols-2">
+				<div className="glass rounded-2xl shadow-xl p-6 md:p-8 space-y-6 border border-emerald-200/20 dark:border-emerald-500/20">
+					<h4 className="text-2xl font-bold text-gradient">Collect Payouts</h4>
+					<div className="grid gap-4 md:grid-cols-2">
 						<button
 							type="button"
 							onClick={handleCollectFee}
 							disabled={!canCollectFee || isSubmitting}
-							className="w-full px-4 py-3 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+							className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 							title={
 								!isCreator
 									? "Only the creator can collect fees"
 									: lottery.remainingFeeMist === 0
-									? "No fees remaining"
-									: "Collect creator fees"
+										? "No fees remaining"
+										: "Collect creator fees"
 							}
 						>
 							{isSubmitting && canCollectFee
-								? "Processing..."
+								? "⏳ Processing..."
 								: canCollectFee
-								? `Collect Fee (${lottery.remainingFee} SUI)`
-								: "Collect Fee"}
+									? `💵 Collect Fee (${lottery.remainingFee} SUI)`
+									: "💵 Collect Fee"}
 						</button>
 						<button
 							type="button"
 							onClick={handleCollectPrize}
 							disabled={!canCollectPrize || isSubmitting}
-							className="w-full px-4 py-3 rounded-lg bg-yellow-600 text-white font-medium hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+							className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 							title={
 								!isWinner
 									? "Only winner can collect prize"
 									: lottery.prizeClaimed
-									? "Prize already claimed"
-									: "Collect prize"
+										? "Prize already claimed"
+										: "Collect prize"
 							}
 						>
 							{isSubmitting && canCollectPrize
-								? "Processing..."
+								? "⏳ Processing..."
 								: canCollectPrize
-								? `Collect Prize (${lottery.prize} SUI)`
-								: lottery.prizeClaimed
-								? "Prize Claimed"
-								: "Collect Prize"}
+									? `🏆 Collect Prize (${lottery.prize} SUI)`
+									: lottery.prizeClaimed
+										? "✅ Prize Claimed"
+										: "🏆 Collect Prize"}
 						</button>
 					</div>
-					<div className="border-t pt-4 space-y-2">
-						<p className="text-sm text-gray-700 dark:text-gray-300">
-							Anonymous Prize Claim
+					<div className="border-t border-purple-200/30 dark:border-purple-500/20 pt-6 space-y-3">
+						<div className="flex items-center gap-2">
+							<span className="text-2xl">🕵️</span>
+							<h5 className="text-lg font-bold">Anonymous Prize Claim</h5>
+						</div>
+						<p className="text-sm text-gray-600 dark:text-gray-400">
+							Claim your prize anonymously using your secret key from any wallet
 						</p>
-						<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+						<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 							<input
 								type="text"
 								value={claimSecret}
 								onChange={(e) => setClaimSecret(e.target.value)}
 								placeholder="Enter claim secret (hex)"
-								className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
+								className="flex-1 px-4 py-3 border-2 border-purple-300 dark:border-purple-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 font-mono text-sm"
 							/>
 							<button
 								type="button"
 								onClick={handleClaimPrizeWithSecret}
 								disabled={isSubmitting || !claimSecret || lottery.prizeClaimed}
-								className="px-4 py-2 rounded-lg bg-orange-600 text-white font-medium hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+								className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap"
 							>
-								{isSubmitting ? "Processing..." : lottery.prizeClaimed ? "Claimed" : "Claim Anonymously"}
+								{isSubmitting ? "⏳ Processing..." : lottery.prizeClaimed ? "✅ Claimed" : "🔒 Claim Anonymously"}
 							</button>
 						</div>
 						{lottery.prizeClaimed && (
-							<p className="text-xs text-gray-500 dark:text-gray-400">Prize already claimed.</p>
+							<p className="text-sm text-gray-500 dark:text-gray-400">✅ Prize has already been claimed</p>
 						)}
 					</div>
 				</div>
 			)}
 			{statusMessage && (
-				<div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-sm text-gray-700 dark:text-gray-200">
-					{statusMessage}
+				<div className="glass rounded-2xl shadow-md p-6 border border-blue-200/30 dark:border-blue-500/20 animate-slide-up">
+					<p className="text-sm font-medium whitespace-pre-wrap">{statusMessage}</p>
 				</div>
 			)}
 			{showConfirm && lottery && selectedSlot !== null && (
 				<div
-					className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4"
+					className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 animate-slide-up"
 					role="dialog"
 					aria-modal="true"
 					aria-label="Confirm pick slot"
+					onClick={() => !isSubmitting && setShowConfirm(false)}
 				>
-					<div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-						<h3 className="text-lg font-semibold">Pick Slot {selectedSlot}?</h3>
-						<p className="text-sm text-gray-600 dark:text-gray-400">
-							This lottery is active. Do you want to pick slot {selectedSlot}? Entry fee: {mistToSui(lottery.feeMist)} SUI.
+					<div
+						className="glass-strong rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-5"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="text-center">
+							<div className="text-5xl mb-3">🎯</div>
+							<h3 className="text-2xl font-bold text-gradient">Confirm Pick</h3>
+						</div>
+						<p className="text-center text-gray-600 dark:text-gray-300">
+							Entry fee: <strong className="text-gradient">{mistToSui(lottery.feeMist)} SUI</strong>
 						</p>
-						<div className="flex gap-3 justify-end">
+						<div className="flex gap-3">
 							<button
 								type="button"
 								onClick={() => setShowConfirm(false)}
-								className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+								className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 font-semibold hover:bg-white/20 dark:hover:bg-white/10 transition-all"
 								disabled={isSubmitting}
 							>
 								Cancel
@@ -447,9 +457,9 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 								type="button"
 								onClick={handlePickSlot}
 								disabled={isSubmitting}
-								className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+								className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-60 disabled:transform-none"
 							>
-								{isSubmitting ? "Processing..." : "Pick Slot"}
+								{isSubmitting ? "⏳ Processing..." : "🎯 Pick Slot!"}
 							</button>
 						</div>
 					</div>
@@ -457,30 +467,37 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 			)}
 			{showSecretModal && (
 				<div
-					className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4"
+					className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 animate-slide-up"
 					role="dialog"
 					aria-modal="true"
 					aria-label="Generate secret first"
+					onClick={() => setShowSecretModal(false)}
 				>
-					<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-3">
-						<h3 className="text-lg font-semibold">Secret Needed</h3>
-						<p className="text-sm text-gray-700 dark:text-gray-300">
-							이 게임을 플레이하려면 먼저 Wallet 페이지에서 My Secret을 생성해야 합니다.
+					<div
+						className="glass-strong rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-5"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="text-center">
+							<div className="text-5xl mb-3">🔐</div>
+							<h3 className="text-2xl font-bold text-gradient">Secret Required</h3>
+						</div>
+						<p className="text-center text-gray-600 dark:text-gray-300">
+							You need to generate your secret in the Wallet page first before playing.
 						</p>
-						<div className="flex justify-end gap-3">
+						<div className="flex gap-3">
 							<button
 								type="button"
 								onClick={() => setShowSecretModal(false)}
-								className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+								className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 font-semibold hover:bg-white/20 dark:hover:bg-white/10 transition-all"
 							>
-								닫기
+								Close
 							</button>
 							<button
 								type="button"
 								onClick={() => navigate("/wallet")}
-								className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+								className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:shadow-lg transition-all transform hover:-translate-y-0.5"
 							>
-								Wallet으로 이동
+								💼 Go to Wallet
 							</button>
 						</div>
 					</div>

@@ -1,65 +1,83 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <script type="module">
-      // first npm i react-grab
-      // then in head:
-      if (import.meta.env.DEV) {
-        import("react-grab");
-      }
-    </script>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>React Quickstart</title>
-    <style>
-      /*
+
+<head>
+  <script type="module">
+    // first npm i react-grab
+    // then in head:
+    if (import.meta.env.DEV) {
+      import("react-grab");
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="WalrusPlay - A fun, decentralized lottery game on the Sui blockchain. Pick your numbers, win prizes, and claim anonymously!" />
+  <title>WalrusPlay - Win Big!</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    /*
   Josh's Custom CSS Reset
   https://www.joshwcomeau.com/css/custom-css-reset/
 */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      * {
-        margin: 0;
-      }
-      body {
-        line-height: 1.5;
-        -webkit-font-smoothing: antialiased;
-      }
-      img,
-      picture,
-      video,
-      canvas,
-      svg {
-        display: block;
-        max-width: 100%;
-      }
-      input,
-      button,
-      textarea,
-      select {
-        font: inherit;
-      }
-      p,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        overflow-wrap: break-word;
-      }
-      #root,
-      #__next {
-        isolation: isolate;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    * {
+      margin: 0;
+    }
+
+    body {
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img,
+    picture,
+    video,
+    canvas,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    input,
+    button,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      overflow-wrap: break-word;
+    }
+
+    #root,
+    #__next {
+      isolation: isolate;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
