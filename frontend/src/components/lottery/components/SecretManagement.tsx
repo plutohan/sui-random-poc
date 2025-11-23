@@ -18,8 +18,8 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 		isGeneratingSecret,
 		isEncryptingAndUploading,
 		isFetchingAndDecrypting,
-		status: secretStatus,
 		blobOptions,
+		status: secretStatus,
 		handleGenerateAndUploadSecret,
 		handleEncryptAndUploadSecret,
 		handleFetchAndDecryptSecret,
@@ -131,33 +131,6 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 							: "Generate Secret"}
 					</button>
 				</div>
-
-				{/* Fetch Secret Section - COMMENTED OUT (Walrus disabled) */}
-				{/*
-				<div className="border-t dark:border-gray-700 pt-4">
-					<h4 className="font-semibold mb-2">Or Fetch Existing Secret</h4>
-					<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-						If you already created a secret before, enter your Walrus Blob ID
-						to retrieve it.
-					</p>
-					<div className="flex gap-2">
-						<input
-							type="text"
-							value={blobIdInput}
-							onChange={(e) => setBlobIdInput(e.target.value)}
-							placeholder="Enter Walrus Blob ID (hex)"
-							className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
-						/>
-						<button
-							onClick={handleFetchSecret}
-							disabled={isRetrievingSecret || !blobIdInput.trim()}
-							className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
-						>
-							{isRetrievingSecret ? "Fetching..." : "Fetch Secret"}
-						</button>
-					</div>
-				</div>
-				*/}
 
 				{/* Display Current Secret */}
 				{generatedSecret && claimSecretHash && (
