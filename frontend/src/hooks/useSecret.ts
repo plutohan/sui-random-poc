@@ -6,6 +6,7 @@ import {
 } from "@mysten/dapp-kit"
 import { keccak256 as keccakHash } from "js-sha3"
 import { PACKAGE_ID } from "../config/constants"
+import { SuiClient } from "@mysten/sui/client"
 
 // Helper function to generate random bytes
 const generateRandomBytes = (length: number): Uint8Array => {
@@ -31,6 +32,135 @@ export const keccak256 = (data: Uint8Array): Uint8Array => {
 	return hashBytes
 }
 
+const getAllCaps = async (suiClient: SuiClient, currentAccountAddress: string): Promise<CapObjectInfo[]> => {
+	console.log(
+		`\n🔍 Loading all Cap objects for address: ${currentAccountAddress}`
+	)
+
+	const caps: CapObjectInfo[] = []
+	let cursor: string | null = null
+
+	while (true) {
+		const res = await suiClient.getOwnedObjects({
+			owner: currentAccountAddress,
+			options: {
+				showContent: true,
+				showType: true,
+			},
+			filter: {
+				StructType: `${PACKAGE_ID}::allowlist::Cap`,
+			},
+			cursor: cursor ?? undefined,
+			limit: 50,
+		})
+
+		const parsedCaps = res.data
+			.map(parseCapObject)
+			.filter((item): item is CapObjectInfo => item !== null)
+
+		caps.push(...parsedCaps)
+
+		if (!res.hasNextPage || !res.nextCursor) {
+			break
+		}
+
+		cursor = res.nextCursor
+	}
+
+	console.log(`✅ Found ${caps.length} Cap object(s)`)
+	return caps
+}
+
+const parseCapObject = (obj: any): CapObjectInfo | null => {
+	const content = obj.data?.content
+	if (!content || content.dataType !== "moveObject") {
+		return null
+	}
+
+	const fields = (content as { fields?: any }).fields
+	if (!fields) {
+		return null
+	}
+
+	const idField = fields.id
+	const allowlistField = fields.allowlist_id
+
+	const capId =
+		typeof idField === "object" && idField !== null
+			? idField.id ?? idField
+			: idField
+	const allowlistId =
+		typeof allowlistField === "object" && allowlistField !== null
+			? allowlistField.id ?? allowlistField
+			: allowlistField
+
+	if (typeof capId !== "string" || typeof allowlistId !== "string") {
+		return null
+	}
+
+	return {
+		id: capId,
+		allowlistId,
+	}
+}
+const getBlobIdsFromAllowlist = async (
+	allowlistId: string,
+	suiClient: SuiClient
+): Promise<string[]> => {
+	const blobIds: string[] = []
+	let cursor: string | null = null
+
+	while (true) {
+		const dynamicFields = await suiClient.getDynamicFields({
+			parentId: allowlistId,
+			cursor: cursor ?? undefined,
+			limit: 50,
+		})
+
+		const extracted = dynamicFields.data
+			.map((field) => {
+				if (typeof field.name === "string") {
+					return field.name
+				}
+
+				if (
+					field.name &&
+					typeof field.name === "object" &&
+					"value" in field.name &&
+					typeof field.name.value === "string"
+				) {
+					return field.name.value
+				}
+
+				return null
+			})
+			.filter((id): id is string => id !== null)
+
+		blobIds.push(...extracted)
+
+		if (!dynamicFields.hasNextPage || !dynamicFields.nextCursor) {
+			break
+		}
+
+		cursor = dynamicFields.nextCursor
+	}
+
+	return blobIds
+}
+
+
+
+type CapObjectInfo = {
+	id: string
+	allowlistId: string
+}
+
+export type AllowlistBlobOption = {
+	blobId: string
+	allowlistId: string
+}
+
+
 export const useSecret = (currentAccountAddress: string | undefined) => {
 	const suiClient = useSuiClient()
 	const { mutate: signAndExecute } = useSignAndExecuteTransaction()
@@ -46,19 +176,86 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 	const [isFetchingAndDecrypting, setIsFetchingAndDecrypting] =
 		useState<boolean>(false)
 	const [status, setStatus] = useState<string>("")
+	const [blobOptions, setBlobOptions] = useState<AllowlistBlobOption[]>([])
 
 	// Load secret from localStorage on mount
 	useEffect(() => {
 		const storedHash = localStorage.getItem("lotterySecretHash")
-		const storedBlobId = localStorage.getItem("lotteryWalrusBlobId")
 		const storedEncryptionId = localStorage.getItem("lotteryEncryptionId")
+		// const storedBlobId = localStorage.getItem("lotteryWalrusBlobId")
 		const storedSecret = localStorage.getItem("lotterySecret")
 
 		if (storedHash) setClaimSecretHash(storedHash)
-		if (storedBlobId) setWalrusBlobId(storedBlobId)
+		// if (storedBlobId) setWalrusBlobId(storedBlobId)
 		if (storedEncryptionId) setEncryptionId(storedEncryptionId)
 		if (storedSecret) setGeneratedSecret(storedSecret)
 	}, [])
+
+	// Load Walrus blob IDs owned by the current account via caps/dynamic fields
+	useEffect(() => {
+		if (!currentAccountAddress) {
+			setBlobOptions([])
+			return
+		}
+
+		let isCancelled = false
+
+		const fetchBlobOptions = async () => {
+			try {
+				const caps = await getAllCaps(suiClient, currentAccountAddress)
+				if (isCancelled) {
+					return
+				}
+
+				const allowlistIds = Array.from(
+					new Set(caps.map((cap) => cap.allowlistId).filter(Boolean))
+				)
+
+				console.log("allowlistIds", allowlistIds)
+
+				if (allowlistIds.length === 0) {
+					if (!isCancelled) {
+						setBlobOptions([])
+						setWalrusBlobId("")
+					}
+					return
+				}
+
+				const collected: AllowlistBlobOption[] = []
+
+				for (const allowlistId of allowlistIds) {
+					const blobIds = await getBlobIdsFromAllowlist(allowlistId, suiClient)
+					if (isCancelled) {
+						return
+					}
+					console.log(`✅ Found total ${blobIds.length} blobs in the user's allowlist(${allowlistId})`)
+					blobIds.forEach((blobId) => {
+						collected.push({
+							blobId,
+							allowlistId,
+						})
+					})
+				}
+
+				if (isCancelled) {
+					return
+				}
+
+
+				console.log("collected", collected)
+				setBlobOptions(collected)
+			} catch (error) {
+				console.error("⚠️ Failed to load Walrus blob IDs:", error)
+				setBlobOptions([])
+			} 
+		}
+
+		fetchBlobOptions()
+
+		return () => {
+			isCancelled = true
+		}
+	}, [currentAccountAddress, suiClient])
 
 	const handleGenerateAndUploadSecret = async () => {
 		if (!currentAccountAddress) {
@@ -86,7 +283,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			// Persist to localStorage
 			localStorage.setItem("lotterySecret", secretHex)
 			localStorage.setItem("lotterySecretHash", hashHex)
-			localStorage.removeItem("lotteryWalrusBlobId") // Remove old Walrus blob ID if any
+			// localStorage.removeItem("lotteryWalrusBlobId") // Remove old Walrus blob ID if any
 
 			setStatus(
 				`Secret generated and saved to local storage!\nSecret: ${secretHex}\nHash: ${hashHex}\n\n✓ Secret saved! You can now use this for all lottery picks.`
@@ -281,8 +478,24 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 							// Step 4: Store results
 							setWalrusBlobId(blobId)
 							setEncryptionId(newEncryptionId)
+							setBlobOptions((prev) => {
+								if (
+									prev.some((option) => option.blobId === blobId) ||
+									!allowlistId
+								) {
+									return prev
+								}
 
-							localStorage.setItem("lotteryWalrusBlobId", blobId)
+								return [
+									...prev,
+									{
+										blobId,
+										allowlistId,
+									},
+								]
+							})
+
+							// localStorage.setItem("lotteryWalrusBlobId", blobId)
 							localStorage.setItem("lotteryEncryptionId", newEncryptionId)
 
 							setStatus(
@@ -340,7 +553,6 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			const { decryptWithSeal } = await import("../utils/sealEncryption")
 			const decryptedSecret = await decryptWithSeal(
 				encryptedData,
-				encryptionIdInput,
 				allowlistId,
 				PACKAGE_ID,
 				suiClient,
@@ -365,6 +577,22 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			setClaimSecretHash(hashHex)
 			setWalrusBlobId(blobId)
 			setEncryptionId(encryptionIdInput)
+			setBlobOptions((prev) => {
+				if (
+					prev.some((option) => option.blobId === blobId) ||
+					!allowlistId
+				) {
+					return prev
+				}
+
+				return [
+					...prev,
+					{
+						blobId,
+						allowlistId,
+					},
+				]
+			})
 
 			localStorage.setItem("lotterySecret", decryptedSecret)
 			localStorage.setItem("lotterySecretHash", hashHex)
@@ -393,6 +621,7 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		isGeneratingSecret,
 		isEncryptingAndUploading,
 		isFetchingAndDecrypting,
+		blobOptions,
 		status,
 		handleGenerateAndUploadSecret,
 		handleEncryptAndUploadSecret,
