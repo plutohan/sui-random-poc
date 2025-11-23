@@ -24,7 +24,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -35,7 +35,7 @@ module random_poc::tests {
 
             // Pick the first slot
             let fee_payment = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee_payment, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee_payment, b"test_secret", ts::ctx(&mut scenario));
 
             // Verify slot 0 is now marked as true
             assert!(random_poc::get_slot(&lottery, 0) == true, 1);
@@ -57,7 +57,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -67,11 +67,11 @@ module random_poc::tests {
 
             // Pick multiple slots
             let fee1 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee1, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee1, b"test_secret", ts::ctx(&mut scenario));
             let fee2 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(1, &mut lottery, &r, fee2, ts::ctx(&mut scenario));
+            random_poc::pick_slot(1, &mut lottery, &r, fee2, b"test_secret", ts::ctx(&mut scenario));
             let fee3 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(2, &mut lottery, &r, fee3, ts::ctx(&mut scenario));
+            random_poc::pick_slot(2, &mut lottery, &r, fee3, b"test_secret", ts::ctx(&mut scenario));
 
             // Verify each slot was properly selected
             assert!(random_poc::get_slot(&lottery, 0) == true, 1);
@@ -94,7 +94,7 @@ module random_poc::tests {
 
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -104,9 +104,9 @@ module random_poc::tests {
 
             // Picking the same slot twice should fail
             let fee1 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee1, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee1, b"test_secret", ts::ctx(&mut scenario));
             let fee2 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee2, ts::ctx(&mut scenario)); // Should fail here
+            random_poc::pick_slot(0, &mut lottery, &r, fee2, b"test_secret", ts::ctx(&mut scenario)); // Should fail here
 
             ts::return_shared(lottery);
             ts::return_shared(r);
@@ -124,7 +124,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -137,7 +137,7 @@ module random_poc::tests {
             while (random_poc::is_active(&lottery) && i < random_poc::slot_count()) {
                 if (random_poc::get_slot(&lottery, i) == false) {
                     let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                    random_poc::pick_slot(i, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                    random_poc::pick_slot(i, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
                 };
                 i = i + 1;
             };
@@ -154,7 +154,7 @@ module random_poc::tests {
 
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -185,7 +185,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -196,7 +196,7 @@ module random_poc::tests {
             assert!(random_poc::get_slots_length(&lottery) == random_poc::slot_count(), 1);
 
             let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
             assert!(random_poc::get_slot(&lottery, 0) == true, 2);
 
             ts::return_shared(lottery);
@@ -212,7 +212,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -237,7 +237,7 @@ module random_poc::tests {
 
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -247,7 +247,7 @@ module random_poc::tests {
 
             // Out of bounds slot index (5 slots means indices are 0-4)
             let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(10, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+            random_poc::pick_slot(10, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
 
             ts::return_shared(lottery);
             ts::return_shared(r);
@@ -265,7 +265,7 @@ module random_poc::tests {
         // Create lottery with 2 slots (50% winning probability)
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -279,7 +279,7 @@ module random_poc::tests {
                 let slot_to_try = attempts % random_poc::slot_count();
                 if (random_poc::get_slot(&lottery, slot_to_try) == false) {
                     let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                    random_poc::pick_slot(slot_to_try, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                    random_poc::pick_slot(slot_to_try, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
                 };
                 attempts = attempts + 1;
             };
@@ -305,7 +305,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -317,7 +317,7 @@ module random_poc::tests {
             let mut picked = 0;
             while (picked < random_poc::slot_count() - 1 && random_poc::is_active(&lottery)) {
                 let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                random_poc::pick_slot(picked, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                random_poc::pick_slot(picked, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
                 picked = picked + 1;
             };
 
@@ -328,7 +328,7 @@ module random_poc::tests {
 
                 // Pick last slot - must guarantee a win
                 let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                random_poc::pick_slot(random_poc::slot_count() - 1, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                random_poc::pick_slot(random_poc::slot_count() - 1, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
 
                 // Lottery should become inactive
                 assert!(random_poc::is_active(&lottery) == false, 2);
@@ -354,7 +354,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, ADMIN);
 
@@ -375,7 +375,7 @@ module random_poc::tests {
                 debug::print(&i);
 
                 let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                let random_num = random_poc::pick_slot(i, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                let random_num = random_poc::pick_slot(i, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
 
                 test_utils::print(b"Random number:");
                 debug::print(&random_num);
@@ -410,7 +410,7 @@ module random_poc::tests {
         // Create lottery as ADMIN
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, PLAYER);
 
@@ -420,11 +420,11 @@ module random_poc::tests {
             let r = ts::take_shared<Random>(&scenario);
 
             let fee1 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(0, &mut lottery, &r, fee1, ts::ctx(&mut scenario));
+            random_poc::pick_slot(0, &mut lottery, &r, fee1, b"test_secret", ts::ctx(&mut scenario));
             let fee2 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(1, &mut lottery, &r, fee2, ts::ctx(&mut scenario));
+            random_poc::pick_slot(1, &mut lottery, &r, fee2, b"test_secret", ts::ctx(&mut scenario));
             let fee3 = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-            random_poc::pick_slot(2, &mut lottery, &r, fee3, ts::ctx(&mut scenario));
+            random_poc::pick_slot(2, &mut lottery, &r, fee3, b"test_secret", ts::ctx(&mut scenario));
 
             // Verify fees were collected
             assert!(random_poc::get_remaining_fee(&lottery) == FEE * 3, 1);
@@ -459,7 +459,7 @@ module random_poc::tests {
         // Create lottery as ADMIN
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, PLAYER);
 
@@ -484,7 +484,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, PLAYER);
 
@@ -497,7 +497,7 @@ module random_poc::tests {
             while (random_poc::is_active(&lottery) && i < random_poc::slot_count()) {
                 if (random_poc::get_slot(&lottery, i) == false) {
                     let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                    random_poc::pick_slot(i, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                    random_poc::pick_slot(i, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
                 };
                 i = i + 1;
             };
@@ -536,7 +536,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, PLAYER);
 
@@ -562,7 +562,7 @@ module random_poc::tests {
         // Create lottery
         {
             let payment = coin::mint_for_testing<SUI>(LOTTERY_COST, ts::ctx(&mut scenario));
-            random_poc::create_lottery(payment, ts::ctx(&mut scenario));
+            random_poc::create_lottery(payment, FEE, ts::ctx(&mut scenario));
         };
         ts::next_tx(&mut scenario, PLAYER);
 
@@ -575,7 +575,7 @@ module random_poc::tests {
             while (random_poc::is_active(&lottery) && i < random_poc::slot_count()) {
                 if (random_poc::get_slot(&lottery, i) == false) {
                     let fee = coin::mint_for_testing<SUI>(FEE, ts::ctx(&mut scenario));
-                    random_poc::pick_slot(i, &mut lottery, &r, fee, ts::ctx(&mut scenario));
+                    random_poc::pick_slot(i, &mut lottery, &r, fee, b"test_secret", ts::ctx(&mut scenario));
                 };
                 i = i + 1;
             };

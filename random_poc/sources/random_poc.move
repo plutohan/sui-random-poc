@@ -7,6 +7,7 @@ use sui::coin::{Self, Coin};
 use sui::sui::SUI;
 use sui::balance::{Self, Balance};
 use sui::hash;
+use random_poc::allowlist::{Self};
 
 const ENotActiveLottery: u64 = 1;
 const EInvalidSlot: u64 = 2;
@@ -34,6 +35,7 @@ public struct Lottery has key {
   slot_secret_hashes: vector<option::Option<vector<u8>>>,  // Per-slot claim secret hashes
   prize_claimed: bool,
   fee: u64  // Store the fee per slot for this lottery
+  // Note: No lottery-specific allowlist - users have their own allowlists for secrets
 }
 
 public struct LotteryCreatedEvent has copy, drop, store {
@@ -65,6 +67,7 @@ public fun create_lottery(
   let prize_amount = coin::value(&payment);
 
   let creator = tx_context::sender(ctx);
+
   let lottery = Lottery {
     id: sui::object::new(ctx),
     creator,
@@ -89,6 +92,20 @@ public fun create_lottery(
   });
 
   transfer::share_object(lottery);
+}
+
+//////////////////////////////////////////
+/////// User Allowlist Management
+
+/// Create a user's personal allowlist for secret encryption
+/// Returns a Cap for managing the allowlist
+/// User is automatically added to their allowlist upon creation
+entry fun create_user_allowlist(ctx: &mut tx_context::TxContext) {
+  let user_name = b"User Secret Allowlist".to_string();
+  let cap = allowlist::create_allowlist(user_name, ctx);
+
+  // Transfer Cap to user
+  allowlist::transfer_cap(cap, tx_context::sender(ctx));
 }
 
 fun fill(v: &mut vector<bool>, n: u64) {
@@ -172,6 +189,9 @@ entry fun pick_slot(
   if (won) {
     lottery.winner = option::some(sender);
     lottery.winning_slot = slot_index;
+
+    // Winner should add themselves to their own allowlist using add_self_to_allowlist()
+    // This allows them to decrypt their secret from Walrus
 
     // Emit event with claim info (only visible to winner in their transaction)
     // Winner can use this secret hash to claim anonymously
