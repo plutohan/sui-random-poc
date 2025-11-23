@@ -11,6 +11,9 @@ importers:
       '@mysten/dapp-kit':
         specifier: ^0.19.9
         version: 0.19.9(@tanstack/react-query@5.90.7(react@18.3.1))(@types/react-dom@18.3.7(@types/react@18.3.26))(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.3)
+      '@mysten/seal':
+        specifier: ^0.9.4
+        version: 0.9.4(typescript@5.6.3)
       '@mysten/sui':
         specifier: ^1.45.0
         version: 1.45.0(typescript@5.6.3)
@@ -485,6 +488,9 @@ packages:
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
       react: '*'
+
+  '@mysten/seal@0.9.4':
+    resolution: {integrity: sha512-bVq1zm7MkBIf/PcXoVAbKxJ78HBrtT5sg+lss/kYHW56llmvw/nxm2vBR9NLouqW/5tvNvyfXqffum/0eivUug==}
 
   '@mysten/slush-wallet@0.2.10':
     resolution: {integrity: sha512-+Km3FSGMJ1RoRMijpiq9YFL0rocKPAsBolUdd8pjI7PR9wYgA/wTRV5gJmzVLgJTGfkEkJOqdOccg51XGw1NBw==}
@@ -2671,6 +2677,17 @@ snapshots:
       - babel-plugin-macros
       - immer
       - react-dom
+      - typescript
+
+  '@mysten/seal@0.9.4(typescript@5.6.3)':
+    dependencies:
+      '@mysten/bcs': 1.9.2
+      '@mysten/sui': 1.45.0(typescript@5.6.3)
+      '@noble/curves': 1.9.4
+      '@noble/hashes': 1.8.0
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
       - typescript
 
   '@mysten/slush-wallet@0.2.10(typescript@5.6.3)':
