@@ -14,9 +14,16 @@ const NavBar: React.FC = () => {
 				<div className="flex flex-row justify-between items-center h-16">
 					{/* Logo & Navigation */}
 					<div className="flex items-center space-x-8">
-						<h1 className="text-2xl font-bold text-gradient hidden sm:block">
-							WalrusPlay
-						</h1>
+						<div className="flex items-center gap-2 hidden sm:flex">
+							<img
+								src="/apple-touch-icon.png"
+								alt="WalrusPlay Logo"
+								className="w-8 h-8 rounded-lg"
+							/>
+							<h1 className="text-2xl font-bold text-gradient">
+								WalrusPlay
+							</h1>
+						</div>
 						<ul className="flex space-x-2">
 							<li>
 								<button
