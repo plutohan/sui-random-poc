@@ -26,6 +26,14 @@ const LotteryDetailPage: FC<Props> = ({ gameId }) => {
 	const [showSecretModal, setShowSecretModal] = useState(false)
 	const [claimSecret, setClaimSecret] = useState("")
 
+	// Auto-populate claim secret from localStorage
+	useEffect(() => {
+		const savedSecret = localStorage.getItem("lotterySecret")
+		if (savedSecret && !claimSecret) {
+			setClaimSecret(savedSecret)
+		}
+	}, [claimSecret])
+
 	useEffect(() => {
 		setSelectedSlot(null)
 	}, [gameId])

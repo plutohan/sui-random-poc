@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useState, useEffect } from "react"
 import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import {
@@ -47,6 +47,14 @@ export const LotteryPlay: FC<LotteryPlayProps> = ({
 	const client = useSuiClient()
 	const { mutate: signAndExecute } = useSignAndExecuteTransaction()
 	const [claimSecret, setClaimSecret] = useState<string>("")
+
+	// Auto-populate claim secret from localStorage
+	useEffect(() => {
+		const savedSecret = localStorage.getItem("lotterySecret")
+		if (savedSecret && !claimSecret) {
+			setClaimSecret(savedSecret)
+		}
+	}, [claimSecret])
 
 	const handlePickSlot = async () => {
 		if (!lotteryObjectId || isLoading || slotIndex === null || !lotteryData)
