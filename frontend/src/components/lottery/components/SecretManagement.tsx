@@ -18,8 +18,10 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 		isGeneratingSecret,
 		isEncryptingAndUploading,
 		isFetchingAndDecrypting,
-		status: secretStatus,
 		blobOptions,
+		decryptedSecret,
+		decryptedSecretHash,
+		status: secretStatus,
 		handleGenerateAndUploadSecret,
 		handleEncryptAndUploadSecret,
 		handleFetchAndDecryptSecret,
@@ -36,6 +38,8 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 	const [allowlistIdInput, setAllowlistIdInput] = useState<string>("")
 	const [blobIdInput, setBlobIdInput] = useState<string>("")
 	const [allowlistIdForDecrypt, setAllowlistIdForDecrypt] = useState<string>("")
+	const [_, setBlobOptions] = useState<AllowlistBlobOption[]>([])
+	
 
 	// Auto-populate allowlist ID when it's available
 	useEffect(() => {
@@ -298,7 +302,31 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 						{isFetchingAndDecrypting
 							? "Fetching & Decrypting..."
 							: "Fetch & Decrypt Secret"}
-					</button>
+						</button>
+					{/* Display Current Secret */}
+					{decryptedSecret && decryptedSecretHash && (
+					<div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded">
+						<p className="text-xs font-semibold text-green-800 dark:text-green-200 mb-2">
+							✓ Secret fetched and decrypted!
+						</p>
+						<div className="space-y-2">
+							<div>
+								<p className="text-xs font-medium mb-1">Decrypted Secret:</p>
+								<code className="block text-xs bg-white dark:bg-gray-800 p-2 rounded break-all font-mono">
+									{decryptedSecret}
+								</code>
+							</div>
+							<div>
+								<p className="text-xs font-medium mb-1">
+									Decrypted Secret Hash:
+								</p>
+								<code className="block text-xs bg-white dark:bg-gray-800 p-2 rounded break-all font-mono">
+									{decryptedSecretHash}
+								</code>
+							</div>
+						</div>
+					</div>
+				)}
 				</div>
 			</div>
 		</div>

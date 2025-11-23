@@ -176,6 +176,8 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		useState<boolean>(false)
 	const [status, setStatus] = useState<string>("")
 	const [blobOptions, setBlobOptions] = useState<AllowlistBlobOption[]>([])
+	const [decryptedSecret, setDecryptedSecret] = useState<string>("")
+	const [decryptedSecretHash, setDecryptedSecretHash] = useState<string>("")
 
 	// Load secret from localStorage on mount
 	useEffect(() => {
@@ -590,6 +592,8 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 			setStatus(
 				`✓ Secret fetched and decrypted!\nSecret: ${decryptedSecret}\nHash: ${hashHex}\n\nYou can now use this secret for lottery picks!`
 			)
+			setDecryptedSecret(decryptedSecret)
+			setDecryptedSecretHash(hashHex)
 			setIsFetchingAndDecrypting(false)
 
 			return { secret: decryptedSecret, hash: hashHex }
@@ -609,6 +613,8 @@ export const useSecret = (currentAccountAddress: string | undefined) => {
 		isEncryptingAndUploading,
 		isFetchingAndDecrypting,
 		blobOptions,
+		decryptedSecret,
+		decryptedSecretHash,
 		status,
 		handleGenerateAndUploadSecret,
 		handleEncryptAndUploadSecret,
