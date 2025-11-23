@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { useSecret } from "../../../hooks/useSecret"
+import { AllowlistBlobOption, useSecret } from "../../../hooks/useSecret"
 import { useUserAllowlist } from "../../../hooks/useUserAllowlist"
 
 interface SecretManagementProps {
@@ -20,6 +20,7 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 		isEncryptingAndUploading,
 		isFetchingAndDecrypting,
 		status: secretStatus,
+		blobOptions,
 		handleGenerateAndUploadSecret,
 		handleEncryptAndUploadSecret,
 		handleFetchAndDecryptSecret,
@@ -37,6 +38,7 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 	const [blobIdInput, setBlobIdInput] = useState<string>("")
 	const [encryptionIdInput, setEncryptionIdInput] = useState<string>("")
 	const [allowlistIdForDecrypt, setAllowlistIdForDecrypt] = useState<string>("")
+	const [_, setBlobOptions] = useState<AllowlistBlobOption[]>([])
 
 	// Auto-populate allowlist ID when it's available
 	useEffect(() => {
@@ -47,16 +49,19 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 
 	// Auto-populate fields for decryption when available
 	useEffect(() => {
-		if (walrusBlobId && !blobIdInput) {
-			setBlobIdInput(walrusBlobId)
-		}
+		// if (walrusBlobId && !blobIdInput) {
+		// 	setBlobIdInput(walrusBlobId)
+		// }
 		if (encryptionId && !encryptionIdInput) {
 			setEncryptionIdInput(encryptionId)
 		}
 		if (allowlistId && !allowlistIdForDecrypt) {
 			setAllowlistIdForDecrypt(allowlistId)
 		}
-	}, [walrusBlobId, encryptionId, allowlistId, blobIdInput, encryptionIdInput, allowlistIdForDecrypt])
+		if (blobOptions.length > 0) {
+			setBlobOptions(blobOptions)
+		}
+	}, [encryptionId, allowlistId, blobOptions, encryptionIdInput, allowlistIdForDecrypt])
 
 	// Notify parent of status changes using useEffect
 	useEffect(() => {
@@ -241,6 +246,29 @@ export const SecretManagement: FC<SecretManagementProps> = ({
 						<label className="block text-xs font-medium mb-1">
 							Walrus Blob ID:
 						</label>
+						{blobOptions.length > 0 && (
+							<select
+								value={
+									blobOptions.some((option) => option.blobId === blobIdInput)
+										? blobIdInput
+										: ""
+								}
+								onChange={(e) => setBlobIdInput(e.target.value)}
+								className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
+							>
+								<option value="" disabled>
+									Select from detected blob IDs
+								</option>
+								{blobOptions.map((option) => (
+									<option
+										key={`${option.allowlistId}-${option.blobId}`}
+										value={option.blobId}
+									>
+										{option.blobId}
+									</option>
+								))}
+							</select>
+						)}
 						<input
 							type="text"
 							value={blobIdInput}

@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui/client"
-import { SealClient, SessionKey } from "@mysten/seal"
+import { EncryptedObject, SealClient, SessionKey } from "@mysten/seal"
 import { fromHex, toHex } from "@mysten/sui/utils"
 import { Transaction } from "@mysten/sui/transactions"
 
@@ -89,7 +89,6 @@ export async function encryptWithSeal(
  */
 export async function decryptWithSeal(
 	encryptedData: Uint8Array,
-	encryptionId: string,
 	allowlistId: string,
 	packageId: string,
 	suiClient: SuiClient,
@@ -129,17 +128,20 @@ export async function decryptWithSeal(
 		const tx = new Transaction()
 
 		// Convert encryption ID to bytes
-		const encryptionIdBytes = fromHex(
-			encryptionId.startsWith("0x") ? encryptionId.slice(2) : encryptionId
-		)
+		// const encryptionIdBytes = fromHex(
+			// encryptionId.startsWith("0x") ? encryptionId.slice(2) : encryptionId
+		// )
 
-		console.log("Encryption ID:", encryptionId)
+		const id = EncryptedObject.parse(new Uint8Array(encryptedData)).id;
+		const idStr = typeof id === 'string' ? id : toHex(id);
+
+		// console.log("Encryption ID:", encryptionId)
 		console.log("Allowlist ID:", allowlistId)
 
 		tx.moveCall({
 			target: `${packageId}::allowlist::seal_approve`,
 			arguments: [
-				tx.pure.vector("u8", Array.from(encryptionIdBytes)),
+				tx.pure.vector('u8', fromHex(idStr)),
 				tx.object(allowlistId),
 			],
 		})
